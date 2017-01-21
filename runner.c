@@ -9,6 +9,7 @@
 
 #define true_value 0b11
 #define false_value 0b01
+#define null_value 0b00
 
 // all scheme values are of type ptr
 typedef unsigned long ptr;
@@ -24,6 +25,8 @@ static void print_ptr(ptr x, char* heap) {
       printf("#t");
     } else if (value == false_value) {
       printf("#f");
+    } else if (value == null_value) {
+      printf("()");
     } else {
       printf("Unknown constant: %08x", value);
     }

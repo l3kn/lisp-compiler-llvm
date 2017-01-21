@@ -4,6 +4,7 @@
 (define constant_tag #b1111)
 (define true #b111111)
 (define false #b011111)
+(define null #b001111)
 
 (define wordsize 8)
 
@@ -34,6 +35,7 @@
      (fxshl x 4))
     ((boolean? x)
      (if x true false))
+    ((null? x) null)
     (else (error "Invalid expression: " x))))
 
 (include "environment.scm")
@@ -83,7 +85,7 @@
     ; ((and? expr) (emit-expr stack-index env (and->if expr) tail))
     ; ((or? expr) (emit-expr stack-index env (or->if expr) tail))
     ((let? expr) (emit-let var env expr))
-    ; ((let*? expr) (emit-let* stack-index env expr tail))
+    ((let*? expr) (emit-let* var env expr))
     ; ((string? expr) (emit-string stack-index env expr))
     ((list? expr)
      (let* ((name (car expr))
@@ -119,7 +121,6 @@
 
 (define (emit-program expr)
   (emit "define i64 @scheme_body() {")
-  (emit "entry:")
   (emit-expr "%res" empty-env expr)
   (emit "  ret i64 %res")
   (emit "}"))
@@ -149,4 +150,4 @@
 
 ; (emit-program '(fx+ (fx+ 1 2) (fx+ 3 4)))
 ; (emit-program '(if (fx= 2 1) 10 20))
-(emit-program '(let ((x 1) (y 2)) (fx+ x y)))
+; (emit-program '(let ((x 1)) (fx+ x y)))

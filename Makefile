@@ -8,8 +8,10 @@ link:
 
 compile:
 	llc output.ll -o output.s
+	gcc -m64 -masm=intel -o output output.s entry.s runner.c
 
 run:
-	gcc -m64 -masm=intel -o output output.s entry.s runner.c
-	echo "Program output:"
 	./output
+
+tests:
+	csi -s test/runner.scm
