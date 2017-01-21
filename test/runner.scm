@@ -9,7 +9,7 @@
 
 (define (test-program program expected-result)
   (with-output-to-file "body.ll" (lambda () (emit-program program)))
-  (run "make link compile")
+  (run "make -s link compile")
   (let* ((raw-result (capture "./output"))
          (result (if (>= (string-length raw-result) 1)
                      (string-copy raw-result 0 (sub1 (string-length raw-result)))

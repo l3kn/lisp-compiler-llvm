@@ -9,12 +9,12 @@ define i64 @prim_fx_minus_(i64 %a, i64 %b) {
 }
 
 define i64 @prim_fxadd1(i64 %a) {
-  %tmp = add i64 %a, 16
+  %tmp = add i64 %a, 8
   ret i64 %tmp
 }
 
 define i64 @prim_fxsub1(i64 %a) {
-  %tmp = sub i64 %a, 16
+  %tmp = sub i64 %a, 8
   ret i64 %tmp
 }
 

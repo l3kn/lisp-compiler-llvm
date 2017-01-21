@@ -3,13 +3,13 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-#define tag_mask 0b1111
-#define fixnum_tag 0b0000
-#define const_tag 0b1111
+#define tag_mask 0b111
+#define fixnum_tag 0b000
+#define const_tag 0b111
 
-#define true_value 0b11
-#define false_value 0b01
-#define null_value 0b00
+#define true_value 0b111
+#define false_value 0b011
+#define null_value 0b000
 
 // all scheme values are of type ptr
 typedef unsigned long ptr;
@@ -17,7 +17,7 @@ extern ptr scheme_entry();
 
 static void print_ptr(ptr x, char* heap) {
   unsigned long tag = x & tag_mask;
-  unsigned long value = x >> 4;
+  unsigned long value = x >> 3;
   if (tag == fixnum_tag) {
     printf("%d", ((int)value));
   } else if (tag == const_tag) {

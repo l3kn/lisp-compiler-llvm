@@ -4,6 +4,13 @@
 
 * 64bit
 * Tagged Pointers for values, 4bit tag, 60bit value
-  * 0000: Integer
-  * 1111: Hardcoded primitives, #t, #f, '() 
+  * 000: Integer
+  * 111: Hardcoded primitives, #t, #f, '() 
+
+  1. Fixnum
+  2. String
+  3. Pair
+  4. Vector
+  5. Primitives
+  6. Closure
 

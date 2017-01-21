@@ -1,10 +1,10 @@
-(define tag_mask #b1111)
-(define fixnum_tag #b0000)
+(define tag_mask #b111)
+(define fixnum_tag #b000)
 
-(define constant_tag #b1111)
-(define true #b111111)
+(define constant_tag #b111)
+(define true  #b111111)
 (define false #b011111)
-(define null #b001111)
+(define null  #b000111)
 
 (define wordsize 8)
 
@@ -18,8 +18,6 @@
   (and (pair? expr)
        (eq? (car expr) tag)))
 
-(define empty_list #b00111111)
-
 (define (string-join lst) (foldl string-append "" lst))
 (define (show . args) (string-join (map ->string args)))
 
@@ -32,7 +30,7 @@
 (define (immediate-rep x)
   (cond
     ((fixnum? x) 
-     (fxshl x 4))
+     (fxshl x 3))
     ((boolean? x)
      (if x true false))
     ((null? x) null)
