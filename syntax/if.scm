@@ -3,7 +3,7 @@
 (define if-consequent caddr)
 (define if-alternative cadddr)
 
-(define (emit-if var expr)
+(define (emit-if var env expr)
   (let ((true-label (unique-label "true"))
         (false-label (unique-label "false"))
         (end-label (unique-label "end")))
@@ -12,18 +12,18 @@
           (res-var (generate-var))
           (res-var1 (generate-var))
           (res-var2 (generate-var)))
-      (emit-expr test-var (if-test expr))
+      (emit-expr test-var env (if-test expr))
       (emit (format "  ~A = icmp eq i64 ~A, ~A" test-res-var test-var (immediate-rep #t)))
       (emit (format "  ~A = alloca i64, align 8" res-var))
       (emit (format "  br i1 ~A, label %~A, label %~A" test-res-var true-label false-label))
 
       (emit (format "~A:" true-label))
-      (emit-expr res-var1 (if-consequent expr))
+      (emit-expr res-var1 env (if-consequent expr))
       (emit (format "  store i64 ~A, i64* ~A, align 8" res-var1 res-var))
       (emit (format "  br label %~A" end-label))
 
       (emit (format "~A:" false-label))
-      (emit-expr res-var2 (if-alternative expr))
+      (emit-expr res-var2 env (if-alternative expr))
       (emit (format "  store i64 ~A, i64* ~A, align 8" res-var2 res-var))
       (emit (format "  br label %~A" end-label))
 

@@ -90,31 +90,30 @@
                (z (fx+ y y)))
           z))
       "8")
+    '((let* ((a 1)
+             (b (fxadd1 a))
+             (c (fxadd1 b)))
+             (fx+ (fx+ a b) c))
+      "6")
     ))
-;     '((let* ((a 1)
-;              (b (fxadd1 a))
-;              (c (fxadd1 b)))
-;              (fx+ (fx+ a b) c))
-;       "6")
-;     ))
 
 ; IF
 
-; (test-programs
-;   (list
-;     '((if #t 1 2) "1")
-;     '((if #f 1 2) "2")
-;     '((if #t (if #f 0 1) 2) "1")
-;     '((if (fxzero? (fx- 5 5)) 0 1) "0")))
+(test-programs
+  (list
+    '((if #t 1 2) "1")
+    '((if #f 1 2) "2")
+    '((if #t (if #f 0 1) 2) "1")
+    '((if (fxzero? (fx- 5 5)) 0 1) "0")))
 
 ; BEGIN
 
-; (test-programs
-;   (list
-;     '((begin (fx+ 1 2)
-;              (fx+ 2 3)
-;              (fx+ 3 4))
-;       "7")))
+(test-programs
+  (list
+    '((begin (fx+ 1 2)
+             (fx+ 2 3)
+             (fx+ 3 4))
+      "7")))
 
 ; Fixnums
 
