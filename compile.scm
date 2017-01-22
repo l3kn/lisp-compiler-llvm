@@ -23,7 +23,8 @@
 (define (atomic? x)
   (or (immediate? x)
       (string? x)
-      (symbol? x)))
+      (symbol? x)
+      (null? x)))
 
 (define (immediate-rep x)
   (cond
@@ -45,6 +46,7 @@
 
 (include "preprocessing/syntax-desugar.scm")
 (include "preprocessing/alpha-convert.scm")
+(include "preprocessing/a-normalize.scm")
 ; (include "primitives.scm")
 ; (include "procedures.scm")
 ; (include "features/booleans.scm")
@@ -148,7 +150,7 @@
             (string-append (car lst) sep)
             (string-join2 (cdr lst) sep)))))
 
-(define (emit-program expr)
+(define (emit-program exprs)
   (emit "define i64 @scheme_body() {")
   ; Allocate 10k 64bit cells to use as heap 
   ; and store the pointer to the base in "@heap_base"
@@ -166,12 +168,16 @@
   (emit "  %foo = call i64 @prim_puts(i64 %res)")
   (emit "  ret i64 %res")
   (emit "}")
-  (for-each (lambda (expr)
-              (let* ((expr (syntax-desugar expr))
-                     (expr (alpha-convert-expr expr)))
-                (emit-toplevel-expr expr)))
-            expr)
+  (for-each (lambda (expr) (emit-toplevel-expr (preprocess expr)))
+            exprs)
 )
+
+(define (preprocess expr)
+  (let* ((expr (syntax-desugar expr))
+         (expr (alpha-convert-expr expr))
+         (expr (normalize-term expr))
+         )
+    expr))
 
 (define var-counter 0)
 (define (generate-var)
@@ -180,15 +186,26 @@
     (format "%tmp~A" (sub1 var-counter))))
 
 
-(emit-program '(
-  (defn fib (n)
-        (if (fx<=? n 1)
-            n
-            (fx+ (fib (fx- n 1))
-                 (fib (fx- n 2)))))
-  (defn main ()
-    (fib 40))
-))
+; (print (preprocess
+;   '(let ((a 1)
+;          (b (fxadd1 1)))
+;      (fx+ a b))
+; ))
+;   '(defn fib (n)
+;         (if (fx<=? n 1)
+;             n
+;             (fx+ (fib (fx- n 1))
+;                  (fib (fx- n 2)))))))
+
+; (emit-program '(
+;   (defn fib (n)
+;         (if (fx<=? n 1)
+;             n
+;             (fx+ (fib (fx- n 1))
+;                  (fib (fx- n 2)))))
+;   (defn main ()
+;     (fib 40))
+; ))
 ; (emit-program '(
 
 ;   (defn fib (n)

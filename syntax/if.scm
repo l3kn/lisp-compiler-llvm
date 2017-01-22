@@ -3,6 +3,9 @@
 (define if-consequent caddr)
 (define if-alternative cadddr)
 
+(define (make-if test con alt)
+  (list 'if test con alt))
+
 (define (emit-if var env expr)
   (let ((true-label (unique-label "true"))
         (false-label (unique-label "false"))

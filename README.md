@@ -59,6 +59,32 @@ Out:
 
 Convert functions applications to use vars only.
 
+### Full example
+
+In:
+
+``` lisp
+(defn fib (n)
+      (if (fx<=? n 1)
+          n
+          (fx+ (fib (fx- n 1))
+               (fib (fx- n 2)))))))
+```
+
+Out:
+
+``` lisp
+(defn fib (n)
+      (let ((test (fx<=? n 1)))
+        (if test
+            n
+            (let ((a (fx- n 1)))
+              (let ((fib_a (fib a)))
+                (let ((b (fx- n 2)))
+                  (let ((fib_b (fib b)))
+                    (fx+ fib_a fib_b))))))))
+```
+
 ## Code sample
 
 ``` lisp

@@ -8,6 +8,7 @@
 (define test-fail 0)
 
 (define (test-program program expected-result)
+  (print "Running test " program)
   (with-output-to-file "body.ll"
                        ; Wrap the program in a main-clause
                        (lambda () 
