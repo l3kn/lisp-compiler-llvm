@@ -120,15 +120,15 @@
     ((list? expr)
      (let* ((name (car expr))
             (args (cdr expr))
-            (args-with-vars (map (lambda (arg) (cons arg (generate-var))) args))
-            (vars (map cdr args-with-vars)))
-       (for-each (lambda (arg_var)
-                   (let ((arg (car arg_var))
-                         (var (cdr arg_var)))
-                     (emit-expr var env arg)))
-                  args-with-vars)
-       ; TODO: this will fail if the fn has no args
-       (emit (format "  ~A = call i64 @~A(i64 ~A)" var (escape name) (string-join2 vars ", i64 ")))
+            (vars (map (lambda (arg)
+                         (string-append
+                           "i64 "
+                           (let ((res (assoc arg env)))
+                             (if res
+                                 (cdr res)
+                                 (show (immediate-rep arg))))))
+                       args)))
+       (emit (format "  ~A = call i64 @~A(~A)" var (escape name) (string-join2 vars ", ")))
        ))
     ((variable? expr)
      (emit-variable-ref var env expr))
