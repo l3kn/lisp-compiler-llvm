@@ -3,11 +3,11 @@
 
 ; (run "make primitives")
 
-(define test-count 0)
-(define test-success 0)
-(define test-fail 0)
+(def test-count 0)
+(def test-success 0)
+(def test-fail 0)
 
-(define (test-program program expected-result)
+(defn test-program (program expected-result)
   (print "Running test " program)
   (with-output-to-file "body.ll"
                        ; Wrap the program in a main-clause
@@ -25,10 +25,10 @@
           (print "Test " program " failed: expected " expected-result ", got " result)
           (set! test-fail (add1 test-fail))))))
 
-(define (display-test-stats)
+(defn display-test-stats ()
   (print "Ran " test-count " tests, " test-fail " failed"))
 
-(define (test-programs lst)
+(defn test-programs (lst)
   (for-each (lambda (test-case)
               (test-program (car test-case)
                             (cadr test-case)))

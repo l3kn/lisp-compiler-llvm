@@ -1,6 +1,6 @@
-(define label-count 0)
+(def label-count 0)
 
-(define (unique-label name)
+(defn unique-label (name)
   (let ((label (string-append
                  "L"
                  (number->string label-count)

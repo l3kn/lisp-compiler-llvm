@@ -1,7 +1,7 @@
-(define (alpha-convert-expr expr)
+(defn alpha-convert-expr (expr)
   (alpha-convert expr empty-env))
 
-(define (alpha-convert expr env)
+(defn alpha-convert (expr env)
   (cond
     ((let? expr)
      (let* ((bindings (let-bindings expr))

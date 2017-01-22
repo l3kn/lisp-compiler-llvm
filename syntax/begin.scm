@@ -1,11 +1,11 @@
-(define (begin? expr) (tagged-list? expr 'begin))
-(define begin-expressions cdr)
+(defn begin? (expr) (tagged-list? expr 'begin))
+(def begin-expressions cdr)
 
-(define (make-begin expressions)
+(defn make-begin (expressions)
   (cons 'begin expressions))
 
-(define (emit-begin var env expr)
-  (define (helper lst)
+(defn emit-begin (var env expr)
+  (def (helper lst)
     (cond ((null? lst)
            (error "Empty begin"))
           ((null? (cdr lst))

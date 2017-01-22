@@ -1,4 +1,4 @@
-(define (syntax-desugar expr)
+(defn syntax-desugar (expr)
   (cond
     ((let? expr)
      (let* ((bindings (let-bindings expr))

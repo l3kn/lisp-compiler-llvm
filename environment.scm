@@ -1,19 +1,19 @@
-(define empty-env '())
+(def empty-env '())
 
-(define (extend-env var val env)
+(defn extend-env (var val env)
   (cons (cons var val) env))
 
-(define (extend-env* vars vals env)
+(defn extend-env* (vars vals env)
   (if (null? vars)
       env
       (extend-env* (cdr vars) (cdr vals)
                    (extend-env (car vars) (car vals) env))))
 
-(define binding-variable car)
-(define binding-value cdr)
+(def binding-variable car)
+(def binding-value cdr)
 
-(define (make-initial-env vars vals)
-  (define (loop vars vals env)
+(defn make-initial-env (vars vals)
+  (def (loop vars vals env)
     (if (null? vars)
         env
         (loop
@@ -22,7 +22,7 @@
           (extend-env (car vars) (car vals) env))))
   (loop vars vals empty-env))
 
-(define (lookup var env)
+(defn lookup (var env)
   (cond
     ((null? env)
      (error "Trying to lookup unbound variable: " var))
@@ -31,7 +31,7 @@
     (else
       (lookup var (cdr env)))))
 
-(define (lookup-or var alt env)
+(defn lookup-or (var alt env)
   (cond
     ((null? env)
      alt)

@@ -1,6 +1,6 @@
-(define (normalize-term expr) (normalize expr (lambda (x) x)))
+(defn normalize-term (expr) (normalize expr (lambda (x) x)))
 
-(define (normalize expr k)
+(defn normalize (expr k)
   (cond
     ((atomic? expr) (k expr))
     ; TODO: Add support for lambads
@@ -44,7 +44,7 @@
     (else
       (error "Can not normalize expr: " expr))))
 
-(define (normalize-name m k)
+(defn normalize-name (m k)
   (normalize m (lambda (n)
                  (if (atomic? n)
                      (k n)
@@ -52,7 +52,7 @@
                           (make-let (list (list t n))
                                     (k t)))))))
 
-(define (normalize-name* m* k)
+(def (normalize-name* m* k)
   (if (null? m*)
       (k '())
       (normalize-name (car m*)

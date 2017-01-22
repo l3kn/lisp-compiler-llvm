@@ -1,32 +1,34 @@
-(define tag_mask #b111)
-(define fixnum_tag #b000)
+(include "macros.scm")
 
-(define constant_tag #b111)
-(define true  #b111111)
-(define false #b011111)
-(define null  #b000111)
+(def tag_mask #b111)
+(def fixnum_tag #b000)
 
-(define wordsize 8)
+(def constant_tag #b111)
+(def true  #b111111)
+(def false #b011111)
+(def null  #b000111)
 
-(define primitives '())
+(def wordsize 8)
 
-(define (register-primitive name code)
+(def primitives '())
+
+(defn register-primitive (name code)
   (let ((old primitives))
     (set! primitives (cons (list name code) old))))
 
-(define (immediate? x)
+(defn immediate? (x)
   (or (fixnum? x)
       (boolean? x)
       (char? x)
       (null? x)))
 
-(define (atomic? x)
+(defn atomic? (x)
   (or (immediate? x)
       (string? x)
       (symbol? x)
       (null? x)))
 
-(define (immediate-rep x)
+(defn immediate-rep (x)
   (cond
     ((fixnum? x) 
      (fxshl x 3))
@@ -58,39 +60,39 @@
 ; (include "features/system.scm")
 ; (include "features/string.scm")
 
-(define (variable? expr) (symbol? expr))
+(defn variable? (expr) (symbol? expr))
 
-(define (emit-label label)
+(defn emit-label (label)
   (emit label ":"))
 
-(define (emit-comment . args)
+(defn emit-comment args
   (apply emit (cons "  # " args)))
 
-(define (emit-stack-load_ stack-index)
+(defn emit-stack-load_ (stack-index)
   (emit (mov rax (offset rsp (- stack-index)))))
 
-(define (emit . output)
+(defn emit output
   (apply print output))
 
-(define (emit-immediate var expr)
+(defn emit-immediate (var expr)
   (emit (format "  ~A = add i64 ~A, 0" var (immediate-rep expr))))
 
 ;;;
 
-(define (defn? expr) (tagged-list? expr 'defn))
-(define defn-name cadr)
-(define defn-args caddr)
-(define (defn-body expr)
+(defn defn? (expr) (tagged-list? expr 'defn))
+(def defn-name cadr)
+(def defn-args caddr)
+(defn defn-body (expr)
   (if (= 1 (length (cdddr expr)))
       (cadddr expr)
       (cons 'begin (cdddr expr))))
 
-(define (make-defn name args body)
+(defn make-defn (name args body)
   (cons 'defn
         (cons name
               (cons args body))))
 
-(define (emit-toplevel-expr expr)
+(defn emit-toplevel-expr (expr)
   (cond
     ((defn? expr)
      (let* ((name (defn-name expr))
@@ -104,7 +106,7 @@
        (emit (format "}"))))
      (else (error "Invalid toplevel expression: " expr))))
 
-(define (emit-expr var env expr)
+(defn emit-expr (var env expr)
   (cond
     ((immediate? expr)
      (emit-immediate var expr))
@@ -136,13 +138,13 @@
       (error "Unknown expression: " expr))))
 
 
-(define (emit-variable-ref var env expr)
+(defn emit-variable-ref (var env expr)
   (let ((var_ (lookup expr env)))
     (if var_
       (emit (format "  ~A = add i64 ~A, 0" var var_))
       (else (error "Reference to unbound variable: " var)))))
 
-(define (string-join2 lst sep)
+(defn string-join2 (lst sep)
   (cond
     ((null? lst) "")
     ((null? (cdr lst)) (car lst))
@@ -150,7 +152,7 @@
             (string-append (car lst) sep)
             (string-join2 (cdr lst) sep)))))
 
-(define (emit-program exprs)
+(defn emit-program (exprs)
   (emit "define i64 @scheme_body() {")
   ; Allocate 10k 64bit cells to use as heap 
   ; and store the pointer to the base in "@heap_base"
@@ -172,15 +174,15 @@
             exprs)
 )
 
-(define (preprocess expr)
+(defn preprocess (expr)
   (let* ((expr (syntax-desugar expr))
          (expr (alpha-convert-expr expr))
          (expr (normalize-term expr))
          )
     expr))
 
-(define var-counter 0)
-(define (generate-var)
+(def var-counter 0)
+(defn generate-var ()
   (begin
     (set! var-counter (add1 var-counter))
     (format "%tmp~A" (sub1 var-counter))))
