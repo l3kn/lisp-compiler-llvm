@@ -35,3 +35,48 @@ define i64 @prim_fxzero_questionmark_(i64 %a) {
   false:
     ret i64 31
 }
+
+define i64 @prim_fx_equal__questionmark_(i64 %a, i64 %b) {
+  %tmp = icmp eq i64 %a, %b
+  br i1 %tmp, label %true, label %false
+  true:
+    ret i64 63
+  false:
+    ret i64 31
+}
+
+define i64 @prim_fx_less__questionmark_(i64 %a, i64 %b) {
+  %tmp = icmp slt i64 %a, %b
+  br i1 %tmp, label %true, label %false
+  true:
+    ret i64 63
+  false:
+    ret i64 31
+}
+
+define i64 @prim_fx_greater__questionmark_(i64 %a, i64 %b) {
+  %tmp = icmp sgt i64 %a, %b
+  br i1 %tmp, label %true, label %false
+  true:
+    ret i64 63
+  false:
+    ret i64 31
+}
+
+define i64 @prim_fx_less__equal__questionmark_(i64 %a, i64 %b) {
+  %tmp = icmp sle i64 %a, %b
+  br i1 %tmp, label %true, label %false
+  true:
+    ret i64 63
+  false:
+    ret i64 31
+}
+
+define i64 @prim_fx_greater__equal__questionmark_(i64 %a, i64 %b) {
+  %tmp = icmp sge i64 %a, %b
+  br i1 %tmp, label %true, label %false
+  true:
+    ret i64 63
+  false:
+    ret i64 31
+}

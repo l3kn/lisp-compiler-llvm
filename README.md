@@ -2,15 +2,19 @@
 
 ## Design Decisions
 
-* 64bit
+* 64bit only
 * Tagged Pointers for values, 4bit tag, 60bit value
   * 000: Integer
   * 111: Hardcoded primitives, #t, #f, '() 
 
-  1. Fixnum
-  2. String
-  3. Pair
-  4. Vector
-  5. Primitives
-  6. Closure
+## Code sample
 
+``` lisp
+  (defn fib (n)
+        (if (fx<=? n 1)
+            n
+            (fx+ (fib (fx- n 1))
+                 (fib (fx- n 2)))))
+  (defn main ()
+    (fib 40))
+```

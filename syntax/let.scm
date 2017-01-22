@@ -33,17 +33,3 @@
             (cdr bindings)
             (extend-env (let-binding-variable b) var_ new-env))))))
   (process-let (let-bindings expr) env))
-
-; (define (emit-let* stack-index env expr tail)
-;   (define (process-let bindings stack-index new-env)
-;     (cond
-;       ((null? bindings)
-;        (emit-expr stack-index new-env (let-body expr) tail))
-;       (else
-;         (let ((b (car bindings)))
-;           (emit-stack-save_ stack-index new-env (let-binding-value b) #f)
-;           (process-let
-;             (cdr bindings)
-;             (next-stack-index stack-index)
-;             (extend-env (let-binding-variable b) stack-index new-env))))))
-;   (process-let (let-bindings expr) stack-index env))

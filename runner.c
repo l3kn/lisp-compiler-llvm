@@ -15,25 +15,25 @@
 typedef unsigned long ptr;
 extern ptr scheme_entry();
 
-static void print_ptr(ptr x, char* heap) {
-  unsigned long tag = x & tag_mask;
-  unsigned long value = x >> 3;
-  if (tag == fixnum_tag) {
-    printf("%d", ((int)value));
-  } else if (tag == const_tag) {
-    if (value == true_value) {
-      printf("#t");
-    } else if (value == false_value) {
-      printf("#f");
-    } else if (value == null_value) {
-      printf("()");
-    } else {
-      printf("Unknown constant: %08x", value);
-    }
-  } else {
-    printf("#<unknown 0x%08x>", x);
-  }
-}
+/* static void print_ptr(ptr x, char* heap) { */
+/*   unsigned long tag = x & tag_mask; */
+/*   unsigned long value = x >> 3; */
+/*   if (tag == fixnum_tag) { */
+/*     printf("%d", ((int)value)); */
+/*   } else if (tag == const_tag) { */
+/*     if (value == true_value) { */
+/*       printf("#t"); */
+/*     } else if (value == false_value) { */
+/*       printf("#f"); */
+/*     } else if (value == null_value) { */
+/*       printf("()"); */
+/*     } else { */
+/*       printf("Unknown constant: %08x", value); */
+/*     } */
+/*   } else { */
+/*     printf("#<unknown 0x%08x>", x); */
+/*   } */
+/* } */
 
 static char* allocate_protected_space(int size) {
   int page = getpagesize();
@@ -97,8 +97,8 @@ int main(int argc, char** argv) {
 
   ptr result = scheme_entry(stack_base, heap);
 
-  print_ptr(result, heap);
-  printf("\n");
+  /* print_ptr(result, heap); */
+  /* printf("\n"); */
 
   deallocate_protected_space(stack_top, stack_size);
   deallocate_protected_space(heap, heap_size);

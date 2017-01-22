@@ -72,6 +72,28 @@
 (define (emit-immediate var expr)
   (emit (format "  ~A = add i64 ~A, 0" var (immediate-rep expr))))
 
+;;;
+
+(define (defn? expr) (tagged-list? expr 'defn))
+(define defn-name cadr)
+(define defn-args caddr)
+(define (defn-body expr)
+  (cons 'begin (cdddr expr)))
+
+(define (emit-toplevel-expr expr)
+  (cond
+    ((defn? expr)
+     (let* ((name (defn-name expr))
+            (args (defn-args expr))
+            (args-with-vars (map (lambda (arg) (cons arg (generate-var))) args))
+            (args-string
+              (string-join2 (map (lambda (a) (string-append "i64 " (cdr a))) args-with-vars) ", ")))
+       (emit (format "define i64 @~A(~A) {" (escape name) args-string))
+       (emit-expr "%res" args-with-vars (defn-body expr))
+       (emit (format "  ret i64 %res"))
+       (emit (format "}"))))
+     (else (error "Invalid toplevel expression: " expr))))
+
 (define (emit-expr var env expr)
   (cond
     ((immediate? expr)
@@ -88,13 +110,14 @@
     ((list? expr)
      (let* ((name (car expr))
             (args (cdr expr))
-            (args_with_vars (map (lambda (arg) (cons arg (generate-var))) args))
-            (vars (map cdr args_with_vars)))
+            (args-with-vars (map (lambda (arg) (cons arg (generate-var))) args))
+            (vars (map cdr args-with-vars)))
        (for-each (lambda (arg_var)
                    (let ((arg (car arg_var))
                          (var (cdr arg_var)))
                      (emit-expr var env arg)))
-                  args_with_vars)
+                  args-with-vars)
+       ; TODO: this will fail if the fn has no args
        (emit (format "  ~A = call i64 @~A(i64 ~A)" var (escape name) (string-join2 vars ", i64 ")))
        ))
     ((variable? expr)
@@ -119,9 +142,25 @@
 
 (define (emit-program expr)
   (emit "define i64 @scheme_body() {")
-  (emit-expr "%res" empty-env expr)
+  ; Allocate 10k 64bit cells to use as heap 
+  ; and store the pointer to the base in "@heap_base"
+  (emit "  %raw_cells = call i8* @calloc(i32 80000, i32 2)")
+  (emit "  store i8* %raw_cells, i8** @raw_heap_base, align 8")
+  (emit "  %cells = bitcast i8* %raw_cells to i64*")
+  (emit "  store i64* %cells, i64** @heap_base, align 8")
+
+  (emit "  %res = call i64 @prim_main()")
+
+  ; (emit-expr "%res" empty-env expr)
+
+  ; Free the heap
+  (emit "  call void @free(i8* %raw_cells)")
+  (emit "  %foo = call i64 @prim_puts(i64 %res)")
   (emit "  ret i64 %res")
-  (emit "}"))
+  (emit "}")
+
+  (for-each emit-toplevel-expr expr)
+)
 
 (define var-counter 0)
 (define (generate-var)
@@ -146,6 +185,27 @@
               (else part)))
           parts)))))
 
+; (emit-program '(
+;   (defn fib (n)
+;         (if (fx<=? n 1)
+;             n
+;             (fx+ (fib (fx- n 1))
+;                  (fib (fx- n 2)))))
+;   (defn main ()
+;     (fib 40))
+; ))
+(emit-program '(
+  (defn fib (n)
+        (fib_helper 0 1 0 n))
+  (defn fib_helper (a b cur goal)
+        (if (fx=? cur goal)
+            a
+            (fib_helper b (fx+ a b) (fxadd1 cur) goal)))
+  (defn main ()
+    (fib 40))
+))
+
 ; (emit-program '(fx+ (fx+ 1 2) (fx+ 3 4)))
+; (emit-program '(begin (puts 1) (puts 2) (puts 3)))
 ; (emit-program '(if (fx= 2 1) 10 20))
 ; (emit-program '(let ((x 1)) (fx+ x y)))
