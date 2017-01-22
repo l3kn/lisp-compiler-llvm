@@ -4,7 +4,7 @@ generate:
 	csi -s compile.scm > body.ll
 
 link:
-	cat prelude.ll primitives/*.ll body.ll > output.ll
+	cat stdlib-ll/*.ll body.ll > output.ll
 
 compile:
 	llc output.ll -o output.s -O1 -x86-asm-syntax=intel
@@ -15,3 +15,6 @@ run:
 
 tests:
 	csi -s test/runner.scm
+
+clean:
+	rm body.ll output.ll output.s output

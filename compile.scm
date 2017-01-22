@@ -185,25 +185,25 @@
               (else part)))
           parts)))))
 
-; (emit-program '(
-;   (defn fib (n)
-;         (if (fx<=? n 1)
-;             n
-;             (fx+ (fib (fx- n 1))
-;                  (fib (fx- n 2)))))
-;   (defn main ()
-;     (fib 40))
-; ))
 (emit-program '(
   (defn fib (n)
-        (fib_helper 0 1 0 n))
-  (defn fib_helper (a b cur goal)
-        (if (fx=? cur goal)
-            a
-            (fib_helper b (fx+ a b) (fxadd1 cur) goal)))
+        (if (fx<=? n 1)
+            n
+            (fx+ (fib (fx- n 1))
+                 (fib (fx- n 2)))))
   (defn main ()
     (fib 40))
 ))
+; (emit-program '(
+;   (defn fib (n)
+;         (fib_helper 0 1 0 n))
+;   (defn fib_helper (a b cur goal)
+;         (if (fx=? cur goal)
+;             a
+;             (fib_helper b (fx+ a b) (fxadd1 cur) goal)))
+;   (defn main ()
+;     (fib 40))
+; ))
 
 ; (emit-program '(fx+ (fx+ 1 2) (fx+ 3 4)))
 ; (emit-program '(begin (puts 1) (puts 2) (puts 3)))
