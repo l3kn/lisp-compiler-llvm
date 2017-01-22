@@ -44,6 +44,7 @@
 (include "syntax/let.scm")
 
 (include "preprocessing/syntax-desugar.scm")
+(include "preprocessing/alpha-convert.scm")
 ; (include "primitives.scm")
 ; (include "procedures.scm")
 ; (include "features/booleans.scm")
@@ -166,7 +167,8 @@
   (emit "  ret i64 %res")
   (emit "}")
   (for-each (lambda (expr)
-              (let* ((expr (syntax-desugar expr)))
+              (let* ((expr (syntax-desugar expr))
+                     (expr (alpha-convert-expr expr)))
                 (emit-toplevel-expr expr)))
             expr)
 )
