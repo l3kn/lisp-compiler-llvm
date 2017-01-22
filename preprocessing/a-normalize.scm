@@ -1,10 +1,10 @@
-(defn normalize-term (expr) (normalize expr (lambda (x) x)))
+(defn normalize-term (expr) (normalize expr (fn (x) x)))
 
 (defn normalize (expr k)
   (cond
     ((atomic? expr) (k expr))
     ; TODO: Add support for lambads
-    ; ((lambda? expr) ...)
+    ; ((fn? expr) ...)
     ((let? expr)
      ; NOTE: This is only possible,
      ; because this step runs after the alpha-conversion.
@@ -17,7 +17,7 @@
            (let ((first-binding (car bindings))
                  (rest-bindings (cdr bindings)))
              (normalize (let-binding-value first-binding)
-                        (lambda (val)
+                        (fn (val)
                           (make-let (list (list (let-binding-variable first-binding) val))
                                     (normalize (make-let rest-bindings body) k))))))))
     ((defn? expr)
@@ -30,22 +30,22 @@
        (k (make-defn name args (map normalize-term body)))))
     ((if? expr)
      (normalize-name (if-test expr)
-                     (lambda (t)
+                     (fn (t)
                        (k (make-if t (normalize-term (if-consequent expr))
                                      (normalize-term (if-alternative expr)))))))
     ((list? expr)
      (let ((op (car expr))
            (args (cdr expr)))
        (normalize-name op
-         (lambda (t)
+         (fn (t)
                  (normalize-name* args
-                   (lambda (t*)
+                   (fn (t*)
                      (k (cons t t*))))))))
     (else
       (error "Can not normalize expr: " expr))))
 
 (defn normalize-name (m k)
-  (normalize m (lambda (n)
+  (normalize m (fn (n)
                  (if (atomic? n)
                      (k n)
                      (let ((t (gensym)))
@@ -56,9 +56,9 @@
   (if (null? m*)
       (k '())
       (normalize-name (car m*)
-        (lambda (t)
+        (fn (t)
                 (normalize-name* (cdr m*)
-                  (lambda (t*) (k (cons t t*))))))))
+                  (fn (t*) (k (cons t t*))))))))
 
 ; (print (normalize-term
 ;          '(if (= 1 1) (+ 1 2) (+ 3 4))

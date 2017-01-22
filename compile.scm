@@ -97,9 +97,9 @@
     ((defn? expr)
      (let* ((name (defn-name expr))
             (args (defn-args expr))
-            (args-with-vars (map (lambda (arg) (cons arg (generate-var))) args))
+            (args-with-vars (map (fn (arg) (cons arg (generate-var))) args))
             (args-string
-              (string-join2 (map (lambda (a) (string-append "i64 " (cdr a))) args-with-vars) ", ")))
+              (string-join2 (map (fn (a) (string-append "i64 " (cdr a))) args-with-vars) ", ")))
        (emit (format "define i64 @~A(~A) {" (escape name) args-string))
        (emit-expr "%res" args-with-vars (defn-body expr))
        (emit (format "  ret i64 %res"))
@@ -122,7 +122,7 @@
     ((list? expr)
      (let* ((name (car expr))
             (args (cdr expr))
-            (vars (map (lambda (arg)
+            (vars (map (fn (arg)
                          (string-append
                            "i64 "
                            (let ((res (assoc arg env)))
@@ -170,7 +170,7 @@
   (emit "  %foo = call i64 @prim_puts(i64 %res)")
   (emit "  ret i64 %res")
   (emit "}")
-  (for-each (lambda (expr) (emit-toplevel-expr (preprocess expr)))
+  (for-each (fn (expr) (emit-toplevel-expr (preprocess expr)))
             exprs)
 )
 

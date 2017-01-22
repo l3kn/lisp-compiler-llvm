@@ -11,7 +11,7 @@
   (print "Running test " program)
   (with-output-to-file "body.ll"
                        ; Wrap the program in a main-clause
-                       (lambda () 
+                       (fn () 
                          (emit-program `((defn main () ,program)))))
   (run "make -s link compile")
   (let* ((raw-result (capture "./output"))
@@ -29,7 +29,7 @@
   (print "Ran " test-count " tests, " test-fail " failed"))
 
 (defn test-programs (lst)
-  (for-each (lambda (test-case)
+  (for-each (fn (test-case)
               (test-program (car test-case)
                             (cadr test-case)))
             lst))

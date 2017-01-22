@@ -4,7 +4,7 @@
      (let* ((bindings (let-bindings expr))
             (body (let-body expr))
             (new-bindings
-              (map (lambda (binding)
+              (map (fn (binding)
                      (list (let-binding-variable binding)
                            (syntax-desugar (let-binding-value binding))))
                    bindings))

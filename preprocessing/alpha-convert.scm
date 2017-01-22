@@ -9,10 +9,10 @@
             (new-env
               (extend-env*
                 (map let-binding-variable bindings)
-                (map (lambda (b) (gensym)) bindings)
+                (map (fn (b) (gensym)) bindings)
                 env))
             (new-bindings
-              (map (lambda (binding)
+              (map (fn (binding)
                      (list (lookup (let-binding-variable binding) new-env)
                            (alpha-convert (let-binding-value binding)
                                           env)))
@@ -21,7 +21,7 @@
        (make-let new-bindings
                  new-body)))
     ((list? expr)
-     (map (lambda (expr) (alpha-convert expr env))
+     (map (fn (expr) (alpha-convert expr env))
           expr))
     ((variable? expr)
      ; If a variable doesn't apper in the env,
