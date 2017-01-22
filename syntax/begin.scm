@@ -1,6 +1,9 @@
 (define (begin? expr) (tagged-list? expr 'begin))
 (define begin-expressions cdr)
 
+(define (make-begin expressions)
+  (cons 'begin expressions))
+
 (define (emit-begin var env expr)
   (define (helper lst)
     (cond ((null? lst)

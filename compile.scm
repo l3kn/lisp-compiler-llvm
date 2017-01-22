@@ -14,18 +14,16 @@
   (let ((old primitives))
     (set! primitives (cons (list name code) old))))
 
-(define (tagged-list? expr tag)
-  (and (pair? expr)
-       (eq? (car expr) tag)))
-
-(define (string-join lst) (foldl string-append "" lst))
-(define (show . args) (string-join (map ->string args)))
-
 (define (immediate? x)
   (or (fixnum? x)
       (boolean? x)
       (char? x)
       (null? x)))
+
+(define (atomic? x)
+  (or (immediate? x)
+      (string? x)
+      (symbol? x)))
 
 (define (immediate-rep x)
   (cond
@@ -37,13 +35,15 @@
     (else (error "Invalid expression: " x))))
 
 (include "environment.scm")
-; (include "asm.scm")
+(include "helper.scm")
 (include "label.scm")
 ; (include "syntax/derived/and.scm")
 ; (include "syntax/derived/or.scm")
 (include "syntax/if.scm")
 (include "syntax/begin.scm")
 (include "syntax/let.scm")
+
+(include "preprocessing/syntax-desugar.scm")
 ; (include "primitives.scm")
 ; (include "procedures.scm")
 ; (include "features/booleans.scm")
@@ -78,7 +78,14 @@
 (define defn-name cadr)
 (define defn-args caddr)
 (define (defn-body expr)
-  (cons 'begin (cdddr expr)))
+  (if (= 1 (length (cdddr expr)))
+      (cadddr expr)
+      (cons 'begin (cdddr expr))))
+
+(define (make-defn name args body)
+  (cons 'defn
+        (cons name
+              (cons args body))))
 
 (define (emit-toplevel-expr expr)
   (cond
@@ -158,8 +165,10 @@
   (emit "  %foo = call i64 @prim_puts(i64 %res)")
   (emit "  ret i64 %res")
   (emit "}")
-
-  (for-each emit-toplevel-expr expr)
+  (for-each (lambda (expr)
+              (let* ((expr (syntax-desugar expr)))
+                (emit-toplevel-expr expr)))
+            expr)
 )
 
 (define var-counter 0)
@@ -168,22 +177,6 @@
     (set! var-counter (add1 var-counter))
     (format "%tmp~A" (sub1 var-counter))))
 
-(define (escape str)
-  (let ((parts (map ->string (string->list (->string str)))))
-    (string-join
-      (cons "prim_"
-        (map
-          (lambda (part)
-            (cond
-              ((equal? part "+") "_plus_")
-              ((equal? part "-") "_minus_")
-              ((equal? part ">") "_greater_")
-              ((equal? part "<") "_less_")
-              ((equal? part "=") "_equal_")
-              ((equal? part "*") "_times_")
-              ((equal? part "?") "_questionmark_")
-              (else part)))
-          parts)))))
 
 (emit-program '(
   (defn fib (n)
@@ -195,6 +188,7 @@
     (fib 40))
 ))
 ; (emit-program '(
+
 ;   (defn fib (n)
 ;         (fib_helper 0 1 0 n))
 ;   (defn fib_helper (a b cur goal)

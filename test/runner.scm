@@ -1,14 +1,17 @@
 (use shell)
 (include "compile.scm")
 
-(run "make primitives")
+; (run "make primitives")
 
 (define test-count 0)
 (define test-success 0)
 (define test-fail 0)
 
 (define (test-program program expected-result)
-  (with-output-to-file "body.ll" (lambda () (emit-program program)))
+  (with-output-to-file "body.ll"
+                       ; Wrap the program in a main-clause
+                       (lambda () 
+                         (emit-program `((defn main () ,program)))))
   (run "make -s link compile")
   (let* ((raw-result (capture "./output"))
          (result (if (>= (string-length raw-result) 1)
