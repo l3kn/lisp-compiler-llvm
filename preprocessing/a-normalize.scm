@@ -14,8 +14,8 @@
            (body (let-body expr)))
        (if (null? bindings)
            (normalize body k)
-           (let ((first-binding (car bindings))
-                 (rest-bindings (cdr bindings)))
+           (let ((first-binding (fst bindings))
+                 (rest-bindings (rst bindings)))
              (normalize (let-binding-value first-binding)
                         (fn (val)
                           (make-let (list (list (let-binding-variable first-binding) val))
@@ -26,7 +26,7 @@
             ; TODO:
             ; We can't use `defn-body` here
             ; because it does some conversions
-            (body (cdddr expr)))
+            (body (rrrst expr)))
        (k (make-defn name args (map normalize-term body)))))
     ((if? expr)
      (normalize-name (if-test expr)
@@ -34,8 +34,8 @@
                        (k (make-if t (normalize-term (if-consequent expr))
                                      (normalize-term (if-alternative expr)))))))
     ((list? expr)
-     (let ((op (car expr))
-           (args (cdr expr)))
+     (let ((op (fst expr))
+           (args (rst expr)))
        (normalize-name op
          (fn (t)
                  (normalize-name* args
@@ -55,9 +55,9 @@
 (def (normalize-name* m* k)
   (if (null? m*)
       (k '())
-      (normalize-name (car m*)
+      (normalize-name (fst m*)
         (fn (t)
-                (normalize-name* (cdr m*)
+                (normalize-name* (rst m*)
                   (fn (t*) (k (cons t t*))))))))
 
 ; (print (normalize-term

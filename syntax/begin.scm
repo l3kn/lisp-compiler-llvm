@@ -1,5 +1,5 @@
 (defn begin? (expr) (tagged-list? expr 'begin))
-(def begin-expressions cdr)
+(def begin-expressions rst)
 
 (defn make-begin (expressions)
   (cons 'begin expressions))
@@ -8,10 +8,10 @@
   (def (helper lst)
     (cond ((null? lst)
            (error "Empty begin"))
-          ((null? (cdr lst))
-           (emit-expr var env (car lst)))
+          ((null? (rst lst))
+           (emit-expr var env (fst lst)))
           (else
-            (emit-expr (generate-var) env (car lst))
-            (helper (cdr lst)))))
+            (emit-expr (generate-var) env (fst lst))
+            (helper (rst lst)))))
   (helper (begin-expressions expr)))
 

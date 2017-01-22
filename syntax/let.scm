@@ -1,9 +1,9 @@
 (defn let? (expr) (tagged-list? expr 'let))
-(def let-bindings cadr)
-(def let-body caddr)
+(def let-bindings frst)
+(def let-body frrst)
 
-(def let-binding-value cadr)
-(def let-binding-variable car)
+(def let-binding-variable fst)
+(def let-binding-value frst)
 
 (defn make-let (bindings body)
   (list 'let bindings body))
@@ -14,11 +14,11 @@
       ((null? bindings)
        (emit-expr var new-env (let-body expr)))
       (else
-        (let ((b (car bindings))
+        (let ((b (fst bindings))
               (var_ (generate-var)))
           (emit-expr var_ env (let-binding-value b))
           (process-let
-            (cdr bindings)
+            (rst bindings)
             (extend-env (let-binding-variable b) var_ new-env))))))
   (process-let (let-bindings expr) env))
 
@@ -29,9 +29,9 @@
          (body (let-body expr)))
     (if (null? bindings)
         body
-        (make-let (list (car bindings))
+        (make-let (list (fst bindings))
                   (let*->nested-lets
-                    (make-let* (cdr bindings)
+                    (make-let* (rst bindings)
                                body))))))
 
 
@@ -44,10 +44,10 @@
 ;       ((null? bindings)
 ;        (emit-expr var new-env (let-body expr)))
 ;       (else
-;         (let ((b (car bindings))
+;         (let ((b (fst bindings))
 ;               (var_ (generate-var)))
 ;           (emit-expr var_ new-env (let-binding-value b))
 ;           (process-let
-;             (cdr bindings)
+;             (rst bindings)
 ;             (extend-env (let-binding-variable b) var_ new-env))))))
 ;   (process-let (let-bindings expr) env))

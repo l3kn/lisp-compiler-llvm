@@ -30,8 +30,8 @@
 
 (defn test-programs (lst)
   (for-each (fn (test-case)
-              (test-program (car test-case)
-                            (cadr test-case)))
+              (test-program (fst test-case)
+                            (frst test-case)))
             lst))
 
 ; Integer tests

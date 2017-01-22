@@ -14,3 +14,37 @@
      (define name
        (lambda args . body)))))
 
+(define fst car)
+(define rst cdr)
+
+(define ffst caar)
+(define frst cadr)
+(define rfst cdar)
+(define rrst cddr)
+
+(define fffst caaar)
+(define ffrst caadr)
+(define frfst cadar)
+(define frrst caddr)
+(define rffst cdaar)
+(define rfrst cdadr)
+(define rrfst cddar)
+(define rrrst cdddr)
+
+(define ffffst caaaar)
+(define fffrst caaadr)
+(define ffrfst caadar)
+(define ffrrst caaddr)
+(define frffst cadaar)
+(define frfrst cadadr)
+(define frrfst caddar)
+(define frrrst cadddr)
+
+(define rfffst cdaaar)
+(define rffrst cdaadr)
+(define rfrfst cdadar)
+(define rfrrst cdaddr)
+(define rrffst cddaar)
+(define rrfrst cddadr)
+(define rrrfst cdddar)
+(define rrrrst cddddr)

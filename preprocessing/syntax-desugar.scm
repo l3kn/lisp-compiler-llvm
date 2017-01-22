@@ -22,7 +22,7 @@
             ; TODO:
             ; We can't use `defn-body` here
             ; because it does some conversions
-            (body (cdddr expr)))
+            (body (rrrst expr)))
        (make-defn name args (map syntax-desugar body))))
     ((list? expr)
      (map syntax-desugar expr))

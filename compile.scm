@@ -80,12 +80,12 @@
 ;;;
 
 (defn defn? (expr) (tagged-list? expr 'defn))
-(def defn-name cadr)
-(def defn-args caddr)
+(def defn-name frst)
+(def defn-args frrst)
 (defn defn-body (expr)
-  (if (= 1 (length (cdddr expr)))
-      (cadddr expr)
-      (cons 'begin (cdddr expr))))
+  (if (= 1 (length (rrrst expr)))
+      (frrrst expr)
+      (cons 'begin (rrrst expr))))
 
 (defn make-defn (name args body)
   (cons 'defn
@@ -99,7 +99,7 @@
             (args (defn-args expr))
             (args-with-vars (map (fn (arg) (cons arg (generate-var))) args))
             (args-string
-              (string-join2 (map (fn (a) (string-append "i64 " (cdr a))) args-with-vars) ", ")))
+              (string-join2 (map (fn (a) (string-append "i64 " (rst a))) args-with-vars) ", ")))
        (emit (format "define i64 @~A(~A) {" (escape name) args-string))
        (emit-expr "%res" args-with-vars (defn-body expr))
        (emit (format "  ret i64 %res"))
@@ -120,14 +120,14 @@
     ((let*? expr) (emit-let* var env expr))
     ; ((string? expr) (emit-string stack-index env expr))
     ((list? expr)
-     (let* ((name (car expr))
-            (args (cdr expr))
+     (let* ((name (fst expr))
+            (args (rst expr))
             (vars (map (fn (arg)
                          (string-append
                            "i64 "
                            (let ((res (assoc arg env)))
                              (if res
-                                 (cdr res)
+                                 (rst res)
                                  (show (immediate-rep arg))))))
                        args)))
        (emit (format "  ~A = call i64 @~A(~A)" var (escape name) (string-join2 vars ", ")))
@@ -147,10 +147,10 @@
 (defn string-join2 (lst sep)
   (cond
     ((null? lst) "")
-    ((null? (cdr lst)) (car lst))
+    ((null? (rst lst)) (fst lst))
     (else (string-append
-            (string-append (car lst) sep)
-            (string-join2 (cdr lst) sep)))))
+            (string-append (fst lst) sep)
+            (string-join2 (rst lst) sep)))))
 
 (defn emit-program (exprs)
   (emit "define i64 @scheme_body() {")
