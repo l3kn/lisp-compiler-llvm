@@ -20,11 +20,11 @@
   (or (fixnum? x)
       (boolean? x)
       (char? x)
-      (symbol? x) ; TODO: This need to be here for "a-normalize" to work with strings
       (null? x)))
 
 (defn atomic? (x)
   (or (immediate? x)
+      (symbol? x)
       (string? x)))
 
 (defn immediate-rep (x)
@@ -227,10 +227,24 @@
 ; ))
 
 (emit-program '(
+  (defn fixnum->string_ (fx)
+        (if (fxzero? fx)
+            ""
+            (string-append
+              (fixnum->string_ (fx/ fx 10))
+              (digit->string (fxrem fx 10)))))
+  (defn fixnum->string (fx)
+        (cond
+          ((fxzero? fx) "0")
+          ((fx<? fx 0) (string-append "-" (fixnum->string_ (fx- 0 fx))))
+          (else (fixnum->string_ fx))))
   (defn main ()
         (inspect (heap-index))
         (newline)
-        (print "test")
+        ; (print (digit->string (fxrem 11 10)))
+        (print (fixnum->string -1337))
+        ; (print (string-append "foo" "bar"))
+        ; (inspect (string-length (string-append_ "foo" "bar")))
         (newline)
         (inspect (heap-index))
         (newline)
@@ -245,22 +259,3 @@
         ;      res))
 ))
 
-; (print (list 'puts2 "test"))
-; (print (normalize-term (list 'puts2 "test")))
-
-; (emit-program '(
-
-;   (defn fib (n)
-;         (fib_helper 0 1 0 n))
-;   (defn fib_helper (a b cur goal)
-;         (if (fx=? cur goal)
-;             a
-;             (fib_helper b (fx+ a b) (fxadd1 cur) goal)))
-;   (defn main ()
-;     (fib 40))
-; ))
-
-; (emit-program '(fx+ (fx+ 1 2) (fx+ 3 4)))
-; (emit-program '(begin (puts 1) (puts 2) (puts 3)))
-; (emit-program '(if (fx= 2 1) 10 20))
-; (emit-program '(let ((x 1)) (fx+ x y)))

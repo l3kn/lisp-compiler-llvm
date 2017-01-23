@@ -10,6 +10,7 @@
               ((equal? part "<") "_less_")
               ((equal? part "=") "_equal_")
               ((equal? part "*") "_times_")
+              ((equal? part "/") "_slash_")
               ((equal? part "?") "_questionmark_")
               (else part)))
           parts)))))

@@ -62,6 +62,36 @@ define i64 @internal_heap-store-byte(i8 %val) {
   ret i64 %int_ptr
 }
 
+define i64 @internal_heap-current-pointer() {
+  %heap_base = load i8*, i8** @heap_base
+  %heap_index = load i64, i64* @heap_index
+
+  %raw_heap_ptr = getelementptr i8, i8* %heap_base, i64 %heap_index
+  %int_ptr = ptrtoint i8* %raw_heap_ptr to i64
+  ret i64 %int_ptr
+}
+
+define i64 @internal_heap-store-string(i8* %str_ptr) {
+  %index = alloca i64
+  store i64 8, i64* %index
+  %ptr = call i64 @internal_heap-current-pointer()
+
+  br label %loop
+loop:
+  %cur_index = load i64, i64* %index
+  %char_ptr = getelementptr i8, i8* %str_ptr, i64 %cur_index
+  %char = load i8, i8* %char_ptr
+  %res = icmp eq i8 %char, 0
+  br i1 %res, label %end, label %cont
+cont:
+  call i64 @internal_heap-store-byte(i8 %char)
+  %tmp = add i64 %cur_index, 1
+  store i64 %tmp, i64* %index
+  br label %loop
+end:
+  ret i64 %ptr
+}
+
 define void @internal_heap-align-index() {
   %heap_index = load i64, i64* @heap_index
   ; Get the last 3 bytes of the index

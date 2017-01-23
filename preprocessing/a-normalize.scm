@@ -46,7 +46,7 @@
 
 (defn normalize-name (m k)
   (normalize m (fn (n)
-                 (if (immediate? n)
+                 (if (or (immediate? n) (variable? n))
                      (k n)
                      (let ((t (gensym)))
                           (make-let (list (list t n))

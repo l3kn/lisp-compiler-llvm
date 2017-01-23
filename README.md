@@ -99,6 +99,23 @@ Out:
     (fib 40))
 ```
 
+## Functions
+
+* `(string-length str)`
+* `(string-append str1, str2)`
+* `(digit->string fx)` (`0` -> `"0", ..., `9` -> `"9"`)
+* `(fixnum->string fx)`
+
+* `(fx+ fx1, fx2)`
+* `(fx- fx1, fx2)`
+* `(fxadd1 fx)`
+* `(fxsub1 fx)`
+* `(fxzero? fx)`
+
+* `(print str)`
+* `(inspect value)`
+* `(newline)`
+
 ## Links
 
 * <http://matt.might.net/articles/a-normalization/>
