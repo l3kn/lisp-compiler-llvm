@@ -5,6 +5,8 @@
 * 64bit only
 * Tagged Pointers for values, 4bit tag, 60bit value
   * 000: Integer
+  * 101: Pair
+  * 110: Pair
   * 111: Hardcoded primitives, #t, #f, '() 
 
 ## Preprocessing

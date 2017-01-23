@@ -20,13 +20,12 @@
   (or (fixnum? x)
       (boolean? x)
       (char? x)
+      (symbol? x) ; TODO: This need to be here for "a-normalize" to work with strings
       (null? x)))
 
 (defn atomic? (x)
   (or (immediate? x)
-      (string? x)
-      (symbol? x)
-      (null? x)))
+      (string? x)))
 
 (defn immediate-rep (x)
   (cond
@@ -44,7 +43,9 @@
 ; (include "syntax/derived/or.scm")
 (include "syntax/if.scm")
 (include "syntax/begin.scm")
+(include "syntax/cond.scm")
 (include "syntax/let.scm")
+(include "syntax/string.scm")
 
 (include "preprocessing/syntax-desugar.scm")
 (include "preprocessing/alpha-convert.scm")
@@ -110,6 +111,8 @@
   (cond
     ((immediate? expr)
      (emit-immediate var expr))
+    ((string? expr)
+     (emit-string var expr))
     ((if? expr)
      (emit-if var env expr))
     ((begin? expr)
@@ -156,18 +159,16 @@
   (emit "define i64 @scheme_body() {")
   ; Allocate 10k 64bit cells to use as heap 
   ; and store the pointer to the base in "@heap_base"
-  (emit "  %raw_cells = call i8* @calloc(i32 80000, i32 2)")
-  (emit "  store i8* %raw_cells, i8** @raw_heap_base, align 8")
-  (emit "  %cells = bitcast i8* %raw_cells to i64*")
-  (emit "  store i64* %cells, i64** @heap_base, align 8")
+  (emit "  %cells = call i8* @calloc(i32 10000, i32 8)")
+  (emit "  store i8* %cells, i8** @heap_base, align 8")
 
   (emit "  %res = call i64 @prim_main()")
 
   ; (emit-expr "%res" empty-env expr)
 
   ; Free the heap
-  (emit "  call void @free(i8* %raw_cells)")
-  (emit "  %foo = call i64 @prim_puts(i64 %res)")
+  (emit "  call void @free(i8* %cells)")
+  ; (emit "  %foo = call i64 @prim_inspectn(i64 %res)")
   (emit "  ret i64 %res")
   (emit "}")
   (for-each (fn (expr) (emit-toplevel-expr (preprocess expr)))
@@ -200,14 +201,53 @@
 ;                  (fib (fx- n 2)))))))
 
 ; (emit-program '(
-;   (defn fib (n)
-;         (if (fx<=? n 1)
-;             n
-;             (fx+ (fib (fx- n 1))
-;                  (fib (fx- n 2)))))
+;   (defn display (val)
+;         (cond
+;           ((pair? val)
+;            (putchar 40)
+;            (putchar 32)
+;            (display (fst val))
+;            (putchar 32)
+;            (putchar 46)
+;            (putchar 32)
+;            (display (rst val))
+;            (putchar 32)
+;            (putchar 41))
+;           ((eq? val #t)
+;            (putchar 35)
+;            (putchar 116))
+;           ((eq? val #f)
+;            (putchar 35)
+;            (putchar 102))
+;           (else (print val))))
 ;   (defn main ()
-;     (fib 40))
+;     (display (cons #f #t))
+;     (putchar 10)
+;   )
 ; ))
+
+(emit-program '(
+  (defn main ()
+        (inspect (heap-index))
+        (newline)
+        (print "test")
+        (newline)
+        (inspect (heap-index))
+        (newline)
+        )
+        ; (print "test"))
+        ; (print (heap-index))
+        ; (putchar 46)
+        ; (let ((res "test"))
+        ;      (putchar 46)
+        ;      (print (heap-index))
+        ;      (putchar 46)
+        ;      res))
+))
+
+; (print (list 'puts2 "test"))
+; (print (normalize-term (list 'puts2 "test")))
+
 ; (emit-program '(
 
 ;   (defn fib (n)

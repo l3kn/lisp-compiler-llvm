@@ -1,6 +1,11 @@
 (defn begin? (expr) (tagged-list? expr 'begin))
 (def begin-expressions rst)
 
+(defn make-sequence (expressions)
+  (if (null? (rst expressions))
+      (fst expressions)
+      (make-begin expressions)))
+
 (defn make-begin (expressions)
   (cons 'begin expressions))
 

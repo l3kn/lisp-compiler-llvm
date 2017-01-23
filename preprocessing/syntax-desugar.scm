@@ -13,8 +13,10 @@
                  new-body)))
     ((let*? expr)
      (syntax-desugar (let*->nested-lets expr)))
+    ((cond? expr)
+     (syntax-desugar (cond->nested-ifs expr)))
     ((begin? expr)
-     (make-begin
+     (make-sequence
        (map syntax-desugar (begin-expressions expr))))
     ((defn? expr)
      (let* ((name (defn-name expr))

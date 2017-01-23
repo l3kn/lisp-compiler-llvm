@@ -3,7 +3,7 @@ define i64 @prim_fx_plus_(i64 %a, i64 %b) {
   ret i64 %tmp
 }
 
-define i64 @prim_fx_minus_(i64 %a, i64 %b) {
+define i64 @prim_fx-(i64 %a, i64 %b) {
   %tmp = sub i64 %a, %b
   ret i64 %tmp
 }

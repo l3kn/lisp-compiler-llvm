@@ -46,7 +46,7 @@
 
 (defn normalize-name (m k)
   (normalize m (fn (n)
-                 (if (atomic? n)
+                 (if (immediate? n)
                      (k n)
                      (let ((t (gensym)))
                           (make-let (list (list t n))
