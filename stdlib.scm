@@ -14,8 +14,7 @@
   (defn string-append* (lst)
         (if (null? lst)
             ""
-            (string-append (fst lst)
-                           (string-append* (rst lst)))))
+            (string-append (fst lst) (string-append* (rst lst)))))
 
   (defn pair->string (pair)
         (string-append* (list "(" (any->string (fst pair)) " . " (any->string (rst pair)) ")")))
@@ -29,5 +28,13 @@
            (fixnum->string val))
           ((pair? val)
            (pair->string val))
+          ((string? val)
+           val)
+          ((symbol? val)
+           (string-append "'" (symbol->string val)))
           (else "unknown")))
+
+  (defn inspect (val)
+        (print (any->string val))
+        (newline))
 ))

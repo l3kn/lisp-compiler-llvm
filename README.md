@@ -3,11 +3,14 @@
 ## Design Decisions
 
 * 64bit only
-* Tagged Pointers for values, 4bit tag, 60bit value
+* Tagged Pointers for values, 3bit tag, 61bit value
   * 000: Integer
-  * 101: Pair
+  * 001: Symbol
+  * 101: String
   * 110: Pair
   * 111: Hardcoded primitives, #t, #f, '() 
+* Symbols limited to 31 chars,
+  max. 10k symbols per program
 
 ## Special Syntax
 
@@ -122,6 +125,10 @@ Out:
 * `(newline)`
 
 * `(eq? v1 v2)` (test equivalence of immediate values (`#t`, `#f`, `()`, fixnums) and pointers)
+
+## TODO
+
+- [ ] Add `align`s in the `.ll` source code
 
 ## Links
 

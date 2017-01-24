@@ -178,11 +178,9 @@
 
 (emit-program '(
   (defn main ()
-        (inspect (heap-index))
-        (newline)
-        (print (any->string (list 1 2)))
-        (newline)
-        (inspect (heap-index))
-        ; (print (string-append* (list "foo" "bar" "baz")))
-        )
+        (let ((str "test"))
+          (inspect str)
+          (inspect (string-length (symbol->string (string->symbol str))))
+          (inspect str)
+        ))
 ))

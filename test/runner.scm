@@ -12,7 +12,10 @@
   (with-output-to-file "body.ll"
                        ; Wrap the program in a main-clause
                        (fn () 
-                         (emit-program `((defn main () ,program)))))
+                         (emit-program `((defn main ()
+                                           (print (any->string ,program))
+                                           (newline)
+                                         )))))
   (run "make -s link compile")
   (let* ((raw-result (capture "./output"))
          (result (if (>= (string-length raw-result) 1)
@@ -126,12 +129,33 @@
     '((fx+ (fx- 1 2) 3) "2")
     '((fx+ 1 (fx+ 2 3)) "6")))
 
-; Pairs
+; Pairs & lists
 
-; (test-programs
-;   (list
-;     '((cons 1 2) "(1 . 2)")
-;     '((cons 1 (cons 2 3)) "(1 . (2 . 3))")
-;   ))
+(test-programs
+  (list
+    '((cons 1 2) "(1 . 2)")
+    '((cons 1 (cons 2 3)) "(1 . (2 . 3))")
+    '((fst (cons (cons 1 2) (cons 3 4))) "(1 . 2)")
+    '((rst (cons (cons 1 2) (cons 3 4))) "(3 . 4)")
+  ))
+
+; Strings
+
+(test-programs
+  (list
+    '((string-length "hello world") "11")
+    '((string-append* (list "foo" "bar" "baz")) "foobarbaz")
+  ))
+
+; Symbols
+
+(test-programs
+  (list
+    '((string->symbol "test") "'test")
+    '((symbol->string (string->symbol "test")) "test")
+    ; Test that symbols have a max length of 31 chars
+    '((symbol->string (string->symbol "01234567890123456789012345678901234567890")) "0123456789012345678901234567890")
+    ))
+
 
 (display-test-stats)
