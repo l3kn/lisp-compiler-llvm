@@ -126,6 +126,12 @@ Out:
 
 * `(eq? v1 v2)` (test equivalence of immediate values (`#t`, `#f`, `()`, fixnums) and pointers)
 
+### Low-Level
+
+* `(__heap-index)`
+* `(__tag val)`
+* `(__value val)`
+
 ## TODO
 
 - [ ] Add `align`s in the `.ll` source code

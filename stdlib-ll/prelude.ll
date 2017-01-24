@@ -71,6 +71,9 @@ define i64 @internal_symbol-create(i8* %string) {
 define i64 @prim_string-_greater_symbol(i64 %string) {
   %tmp1 = xor i64 %string, 5
   %tmp2 = inttoptr i64 %tmp1 to i8*
+
+  ;%search_index = 
+
   %tmp3 = call i64 @internal_symbol-create(i8* %tmp2)
 
   %res = xor i64 %tmp3, 1
@@ -168,63 +171,19 @@ define void @internal_heap-align-index() {
 
 ; Type predicates
 
-define i64 @prim_type-tag(i64 %a) {
+define i64 @prim___tag(i64 %a) {
   %tag = and i64 %a, 7
   %res = shl i64 %tag, 3
-
   ret i64 %res
 }
 
-define i64 @prim_pair_questionmark_(i64 %a) {
-  %tag = and i64 %a, 7
-  %tmp = icmp eq i64 %tag, 6
-  br i1 %tmp, label %true, label %false
-  true:
-    ret i64 63
-  false:
-    ret i64 31
+define i64 @prim___value(i64 %a) {
+  %tmp = lshr i64 %a, 3
+  %res = shl i64 %tmp, 3
+  ret i64 %res
 }
 
-define i64 @prim_string_questionmark_(i64 %a) {
-  %tag = and i64 %a, 7
-  %tmp = icmp eq i64 %tag, 5
-  br i1 %tmp, label %true, label %false
-  true:
-    ret i64 63
-  false:
-    ret i64 31
-}
-
-define i64 @prim_symbol_questionmark_(i64 %a) {
-  %tag = and i64 %a, 7
-  %tmp = icmp eq i64 %tag, 1
-  br i1 %tmp, label %true, label %false
-  true:
-    ret i64 63
-  false:
-    ret i64 31
-}
-
-define i64 @prim_fixnum_questionmark_(i64 %a) {
-  %tag = and i64 %a, 7
-  %tmp = icmp eq i64 %tag, 0
-  br i1 %tmp, label %true, label %false
-  true:
-    ret i64 63
-  false:
-    ret i64 31
-}
-
-define i64 @prim_null_questionmark_(i64 %a) {
-  %tmp = icmp eq i64 %a, 7 
-  br i1 %tmp, label %true, label %false
-  true:
-    ret i64 63
-  false:
-    ret i64 31
-}
-
-define i64 @prim_heap-index() {
+define i64 @prim___heap-index() {
   %heap_index = load i64, i64* @heap_index
   %res = shl i64 %heap_index, 3
   ret i64 %res

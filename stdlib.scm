@@ -1,4 +1,10 @@
 (def stdlib '(
+  (defn pair? (val) (eq? (__tag val) 6))
+  (defn string? (val) (eq? (__tag val) 5))
+  (defn symbol? (val) (eq? (__tag val) 1))
+  (defn fixnum? (val) (eq? (__tag val) 0))
+  (defn null? (val) (eq? val (list)))
+
   (defn fixnum->string_ (fx)
         (if (fxzero? fx)
             ""

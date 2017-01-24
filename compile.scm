@@ -79,7 +79,10 @@
   (apply print output))
 
 (defn emit-immediate (var expr)
-  (emit (format "  ~A = add i64 ~A, 0" var (immediate-rep expr))))
+  (let ((tmp (generate-var)))
+    (emit (format "  ~A = alloca i64" tmp))
+    (emit (format "  store i64 ~A, i64* ~A" (immediate-rep expr) tmp))
+    (emit (format "  ~A = load i64, i64* ~A" var tmp))))
 
 ;;;
 
@@ -147,8 +150,11 @@
 (defn emit-variable-ref (var env expr)
   (let ((var_ (lookup expr env)))
     (if var_
-      (emit (format "  ~A = add i64 ~A, 0" var var_))
-      (else (error "Reference to unbound variable: " var)))))
+      (let ((tmp (generate-var)))
+        (emit (format "  ~A = alloca i64" tmp))
+        (emit (format "  store i64 ~A, i64* ~A" var_ tmp))
+        (emit (format "  ~A = load i64, i64* ~A" var tmp)))
+      (error "Reference to unbound variable: " var))))
 
 (defn string-join2 (lst sep)
   (cond
@@ -179,12 +185,9 @@
 (emit-program '(
   (defn main ()
         (let ((str "test"))
+          (inspect (__heap-index))
           (inspect str)
-          (inspect (string-eq? "foo" "foo"))
-          (inspect (string-eq? "foo" "bar"))
-          (inspect (string-eq? "foo" "fooo"))
-          (inspect (string-eq? "fooo" "foo"))
           ; (inspect (string-length (symbol->string (string->symbol str))))
-          (inspect str)
+          (inspect (__heap-index))
         ))
 ))
