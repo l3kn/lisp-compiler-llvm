@@ -91,6 +91,8 @@
      (emit-immediate var expr))
     ((string? expr)
      (emit-string var expr))
+    ((tagged-list? expr 'quote)
+     (emit-symbol var (frst expr)))
     ((if? expr)
      (emit-if var env expr))
     ((begin? expr)
@@ -124,6 +126,11 @@
         (emit (format "  ~A = load i64, i64* ~A" var tmp)))
       (error "Reference to unbound variable: " var))))
 
+(defn emit-symbol (var expr)
+  (let ((tmp (generate-var)))
+    (emit-string tmp (symbol->string expr))
+    (emit (format "  ~A = call i64 @prim_string-_greater_symbol(i64 ~A)" var tmp))))
+
 (defn string-join2 (lst sep)
   (cond
     ((null? lst) "")
@@ -154,7 +161,8 @@
   (defn main ()
         (let ((str "test"))
           (inspect (__heap-index))
-          (inspect (eq? (string->symbol "foo") (string->symbol "foo")))
+          (inspect 'test)
+          ; (inspect (eq? (string->symbol "foo") (string->symbol "foo")))
           ; (inspect (string-length (symbol->string (string->symbol str))))
           (inspect (__heap-index))
         ))
