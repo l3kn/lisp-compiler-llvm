@@ -9,14 +9,6 @@
 (def false #b011111)
 (def null  #b000111)
 
-(def wordsize 8)
-
-(def primitives '())
-
-(defn register-primitive (name code)
-  (let ((old primitives))
-    (set! primitives (cons (list name code) old))))
-
 (defn immediate? (x)
   (or (fixnum? x)
       (boolean? x)
@@ -71,9 +63,6 @@
 
 (defn emit-comment args
   (apply emit (cons "  # " args)))
-
-(defn emit-stack-load_ (stack-index)
-  (emit (mov rax (offset rsp (- stack-index)))))
 
 (defn emit output
   (apply print output))
