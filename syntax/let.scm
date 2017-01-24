@@ -23,17 +23,3 @@
             (extend-env (let-binding-variable b) var_ new-env))))))
   (process-let (let-bindings expr) env))
 
-(defn let*? (expr) (tagged-list? expr 'let*))
-
-(defn let*->nested-lets (expr)
-  (let* ((bindings (let-bindings expr))
-         (body (let-body expr)))
-    (if (null? bindings)
-        body
-        (make-let (list (fst bindings))
-                  (let*->nested-lets
-                    (make-let* (rst bindings)
-                               body))))))
-
-(defn make-let* (bindings body)
-  (list 'let* bindings body))
