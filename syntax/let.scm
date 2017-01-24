@@ -1,7 +1,7 @@
 (defn let? (expr) (tagged-list? expr 'let))
 (def let-bindings frst)
 (def (let-body expr)
-     (make-begin (rrst expr)))
+     (make-sequence (rrst expr)))
 
 (def let-binding-variable fst)
 (def let-binding-value frst)

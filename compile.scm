@@ -4,6 +4,7 @@
 (def tag_mask #b111)
 (def fixnum_tag #b000)
 
+(def char_tag #b010)
 (def constant_tag #b111)
 (def true  #b111111)
 (def false #b011111)
@@ -12,6 +13,7 @@
 (defn immediate? (x)
   (or (fixnum? x)
       (boolean? x)
+      (char? x)
       (null? x)))
 
 (defn atomic? (x)
@@ -23,6 +25,9 @@
   (cond
     ((fixnum? x) 
      (fxshl x 3))
+    ((char? x)
+     (+ (fxshl (char->integer x) 3)
+        char_tag))
     ((boolean? x)
      (if x true false))
     ((null? x) null)
@@ -72,6 +77,7 @@
               (cons args body))))
 
 (defn emit-toplevel-expr (expr)
+  ; (pp expr))
   (cond
     ((defn? expr)
      (let* ((name (defn-name expr))
@@ -159,11 +165,9 @@
 
 (emit-program '(
   (defn main ()
-        (let ((str "test"))
-          (inspect (__heap-index))
-          (inspect 'test)
+          ; (inspect (__heap-index))
+          (inspect (read "-12"))
           ; (inspect (eq? (string->symbol "foo") (string->symbol "foo")))
           ; (inspect (string-length (symbol->string (string->symbol str))))
-          (inspect (__heap-index))
-        ))
-))
+          ; (inspect (__heap-index))
+  )))

@@ -64,6 +64,12 @@
     '((fxzero? 0) "#t")
     '((fxzero? -100) "#f")
     '((fxzero? 100) "#f")
+    '((fx+ 10 20) "30")
+    '((fx+ 10 -20) "-10")
+    '((fx- 10 20) "-10")
+    '((fx- 10 -20) "30")
+    '((fx* 1 0) "0")
+    '((fx* 12 11) "132")
     ))
 
 ; Booleans
@@ -182,5 +188,29 @@
     '((or #t #t #f) "#t")
     '((or #f #f #f) "#f")))
 
+; Chars
+
+(test-programs
+  (list
+    '((char? #\A) "#t")
+    '((eq? #\A #\A) "#t")
+    '((eq? #\A #\B) "#f")
+    '(#\A "#\\A")
+    '((char->fixnum #\A) "65")
+    '((fixnum->char 65) "#\\A")
+    '((string-ref "hello" 0) "#\\h")
+    '((string-ref "hello" 1) "#\\e")
+    '((string-ref "hello" 2) "#\\l")
+    ))
+
+; read
+
+(test-programs
+  (list
+    '((read "0") "0")
+    '((read "-0") "0")
+    '((read "1234") "1234")
+    '((read "-1234") "-1234")
+    ))
 
 (display-test-stats)

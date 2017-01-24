@@ -6,6 +6,7 @@
 * Tagged Pointers for values, 3bit tag, 61bit value
   * 000: Integer
   * 001: Symbol
+  * 010: Char
   * 101: String
   * 110: Pair
   * 111: Hardcoded primitives, #t, #f, '() 
@@ -15,33 +16,15 @@
 ## Special Syntax
 
 * `(pipe var fn1 fn2 fn3)` = `(fn3 (fn2 (fn1 var)))`
-* `(rpipe var fn1 fn2 fn3)` = `(fn1 (fn2 (fn3 var)))`
 
 ## Preprocessing
 
-### TODO: Convert multi-expr body to `begin`
-
 ### Syntax Desugaring
 
-#### Convert `let*` to nested `let`s
-
-In:
-
-``` lisp
-(let* ((x 1)
-       (y (+ x x))
-       (z (+ y y)))
- (+ z z))))
-```
-
-Out:
-
-``` lisp
-(let ((x 1))
-  (let ((y (+ x x)))
-    (let ((z (+ y y)))
-     (+ z z))))
-```
+* `let*` to nested `let`s
+* `and` to nested `if`s
+* `or` to nested `if`s
+* `cond` to nested `if`s
 
 ### Alpha-Conversion
 

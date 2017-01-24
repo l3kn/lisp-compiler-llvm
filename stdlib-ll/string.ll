@@ -90,3 +90,18 @@ true:
 false:
   ret i64 31
 }
+
+define i64 @prim_string-ref(i64 %string, i64 %idx) {
+  %s_raw = xor i64 %string, 5
+  %s_ptr = inttoptr i64 %s_raw to i8*
+
+  %idx_raw = lshr i64 %idx, 3
+
+  %char_ptr = getelementptr i8, i8* %s_ptr, i64 %idx_raw
+  %tmp1 = load i8, i8* %char_ptr
+  %tmp2 = zext i8 %tmp1 to i64
+  %tmp3 = shl i64 %tmp2, 3
+  %tmp4 = xor i64 %tmp3, 2
+
+  ret i64 %tmp4
+}

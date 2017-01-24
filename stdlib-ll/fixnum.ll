@@ -8,6 +8,14 @@ define i64 @prim_fx-(i64 %a, i64 %b) {
   ret i64 %tmp
 }
 
+define i64 @prim_fxneg(i64 %a) {
+  %tmp1 = lshr i64 %a, 3
+  %tmp2 = sub i64 0, %tmp1
+  %tmp3 = shl i64 %tmp2, 3
+
+  ret i64 %tmp3
+}
+
 define i64 @prim_fxrem(i64 %n, i64 %m) {
   %tmp1 = lshr i64 %n, 3
   %tmp2 = lshr i64 %m, 3
@@ -18,6 +26,15 @@ define i64 @prim_fxrem(i64 %n, i64 %m) {
 
 define i64 @prim_fx_slash_(i64 %n, i64 %m) {
   %tmp = sdiv i64 %n, %m
+  %tmp2 = shl i64 %tmp, 3
+  ret i64 %tmp2
+}
+
+define i64 @prim_fx_times_(i64 %n, i64 %m) {
+  %n_ = lshr i64 %n, 3
+  %m_ = lshr i64 %m, 3
+
+  %tmp = mul i64 %n_, %m_
   %tmp2 = shl i64 %tmp, 3
   ret i64 %tmp2
 }
