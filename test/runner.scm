@@ -162,6 +162,10 @@
     ; Test that symbols have a max length of 31 chars
     '((symbol->string (string->symbol "01234567890123456789012345678901234567890")) "0123456789012345678901234567890")
     '((eq? (string->symbol "foo") (string->symbol "foo")) "#t")
+
+    ; TODO: currently the creation of symbols is broken if the length of the symbol is >31 chars
+    ;'((eq? (string->symbol "fooooooooooooooooooooooooooooooooooooooooooooooooooooo")
+    ;       (string->symbol "fooooooooooooooooooooooooooooooooooooooooooooooooooooo")) "#t")
     '((eq? (string->symbol "foo") (string->symbol "bar")) "#f")
     ))
 
