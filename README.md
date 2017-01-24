@@ -9,6 +9,11 @@
   * 110: Pair
   * 111: Hardcoded primitives, #t, #f, '() 
 
+## Special Syntax
+
+* `(pipe var fn1 fn2 fn3)` = `(fn3 (fn2 (fn1 var)))`
+* `(rpipe var fn1 fn2 fn3)` = `(fn1 (fn2 (fn3 var)))`
+
 ## Preprocessing
 
 ### TODO: Convert multi-expr body to `begin`
@@ -115,6 +120,8 @@ Out:
 * `(print str)`
 * `(inspect value)`
 * `(newline)`
+
+* `(eq? v1 v2)` (test equivalence of immediate values (`#t`, `#f`, `()`, fixnums) and pointers)
 
 ## Links
 

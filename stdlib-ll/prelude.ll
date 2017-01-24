@@ -8,6 +8,15 @@ declare void @puts_ptr(i64)
 @heap_base = global i8* zeroinitializer, align 8
 @heap_index = global i64 0, align 8
 
+define i64 @scheme_body() {
+  %cells = call i8* @calloc(i32 10000, i32 8)
+  store i8* %cells, i8** @heap_base, align 8
+
+  %res = call i64 @prim_main()
+  call void @free(i8* %cells)
+  ret i64 %res
+}
+
 define i64 @prim_inspect(i64 %a) {
   call void @print_ptr(i64 %a)
   ; TODO: Return empty list or undefined
@@ -108,4 +117,33 @@ define void @internal_heap-align-index() {
   %new_heap_index = add i64 %tmp, 8
   store i64 %new_heap_index, i64* @heap_index, align 8
   ret void
+}
+
+define i64 @prim_pair_questionmark_(i64 %a) {
+  %tag = and i64 %a, 7
+  %tmp = icmp eq i64 %tag, 6
+  br i1 %tmp, label %true, label %false
+  true:
+    ret i64 63
+  false:
+    ret i64 31
+}
+
+define i64 @prim_fixnum_questionmark_(i64 %a) {
+  %tag = and i64 %a, 7
+  %tmp = icmp eq i64 %tag, 0
+  br i1 %tmp, label %true, label %false
+  true:
+    ret i64 63
+  false:
+    ret i64 31
+}
+
+define i64 @prim_null_questionmark_(i64 %a) {
+  %tmp = icmp eq i64 %a, 7 
+  br i1 %tmp, label %true, label %false
+  true:
+    ret i64 63
+  false:
+    ret i64 31
 }

@@ -12,16 +12,6 @@ define i64 @prim_cons(i64 %a, i64 %b) {
   ret i64 %res
 }
 
-define i64 @prim_pair_questionmark_(i64 %a) {
-  %tag = and i64 %a, 7
-  %tmp = icmp eq i64 %tag, 6
-  br i1 %tmp, label %true, label %false
-  true:
-    ret i64 63
-  false:
-    ret i64 31
-}
-
 define i64 @prim_fst(i64 %a) {
   ; Remove the pair tag 0b110
   %raw_pointer = xor i64 %a, 6

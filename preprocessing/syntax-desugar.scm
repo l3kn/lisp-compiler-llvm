@@ -1,5 +1,8 @@
 (defn syntax-desugar (expr)
   (cond
+    ((pipe? expr) (syntax-desugar (pipe->nested-calls expr)))
+    ((rpipe? expr) (syntax-desugar (rpipe->nested-calls expr)))
+    ((list_? expr) (syntax-desugar (list->nested-cons expr)))
     ((let? expr)
      (let* ((bindings (let-bindings expr))
             (body (let-body expr))

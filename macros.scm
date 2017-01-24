@@ -14,6 +14,17 @@
      (define name
        (lambda args . body)))))
 
+(define-syntax pipe
+  (syntax-rules ()
+    [(_ x)
+     x]
+    [(_ x (s ss ...))
+     (s x ss ...)]
+    [(_ x y)
+     (y x)]
+    [(_ x y z ...)
+     (pipe (pipe x y) z ...)]))
+
 (define fst car)
 (define rst cdr)
 

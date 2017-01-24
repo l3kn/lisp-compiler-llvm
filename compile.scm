@@ -1,4 +1,5 @@
 (include "macros.scm")
+(include "stdlib.scm")
 
 (def tag_mask #b111)
 (def fixnum_tag #b000)
@@ -46,6 +47,8 @@
 (include "syntax/cond.scm")
 (include "syntax/let.scm")
 (include "syntax/string.scm")
+(include "syntax/pipe.scm")
+(include "syntax/list.scm")
 
 (include "preprocessing/syntax-desugar.scm")
 (include "preprocessing/alpha-convert.scm")
@@ -155,32 +158,17 @@
             (string-append (fst lst) sep)
             (string-join2 (rst lst) sep)))))
 
+
 (defn emit-program (exprs)
-  (emit "define i64 @scheme_body() {")
-  ; Allocate 10k 64bit cells to use as heap 
-  ; and store the pointer to the base in "@heap_base"
-  (emit "  %cells = call i8* @calloc(i32 10000, i32 8)")
-  (emit "  store i8* %cells, i8** @heap_base, align 8")
-
-  (emit "  %res = call i64 @prim_main()")
-
-  ; (emit-expr "%res" empty-env expr)
-
-  ; Free the heap
-  (emit "  call void @free(i8* %cells)")
-  ; (emit "  %foo = call i64 @prim_inspectn(i64 %res)")
-  (emit "  ret i64 %res")
-  (emit "}")
   (for-each (fn (expr) (emit-toplevel-expr (preprocess expr)))
-            exprs)
+            (append stdlib exprs))
 )
 
 (defn preprocess (expr)
-  (let* ((expr (syntax-desugar expr))
-         (expr (alpha-convert-expr expr))
-         (expr (normalize-term expr))
-         )
-    expr))
+  (pipe expr
+        syntax-desugar
+        alpha-convert-expr
+        normalize-term))
 
 (def var-counter 0)
 (defn generate-var ()
@@ -188,74 +176,13 @@
     (set! var-counter (add1 var-counter))
     (format "%tmp~A" (sub1 var-counter))))
 
-
-; (print (preprocess
-;   '(let ((a 1)
-;          (b (fxadd1 1)))
-;      (fx+ a b))
-; ))
-;   '(defn fib (n)
-;         (if (fx<=? n 1)
-;             n
-;             (fx+ (fib (fx- n 1))
-;                  (fib (fx- n 2)))))))
-
-; (emit-program '(
-;   (defn display (val)
-;         (cond
-;           ((pair? val)
-;            (putchar 40)
-;            (putchar 32)
-;            (display (fst val))
-;            (putchar 32)
-;            (putchar 46)
-;            (putchar 32)
-;            (display (rst val))
-;            (putchar 32)
-;            (putchar 41))
-;           ((eq? val #t)
-;            (putchar 35)
-;            (putchar 116))
-;           ((eq? val #f)
-;            (putchar 35)
-;            (putchar 102))
-;           (else (print val))))
-;   (defn main ()
-;     (display (cons #f #t))
-;     (putchar 10)
-;   )
-; ))
-
 (emit-program '(
-  (defn fixnum->string_ (fx)
-        (if (fxzero? fx)
-            ""
-            (string-append
-              (fixnum->string_ (fx/ fx 10))
-              (digit->string (fxrem fx 10)))))
-  (defn fixnum->string (fx)
-        (cond
-          ((fxzero? fx) "0")
-          ((fx<? fx 0) (string-append "-" (fixnum->string_ (fx- 0 fx))))
-          (else (fixnum->string_ fx))))
   (defn main ()
         (inspect (heap-index))
         (newline)
-        ; (print (digit->string (fxrem 11 10)))
-        (print (fixnum->string -1337))
-        ; (print (string-append "foo" "bar"))
-        ; (inspect (string-length (string-append_ "foo" "bar")))
+        (print (any->string (list 1 2)))
         (newline)
         (inspect (heap-index))
-        (newline)
+        ; (print (string-append* (list "foo" "bar" "baz")))
         )
-        ; (print "test"))
-        ; (print (heap-index))
-        ; (putchar 46)
-        ; (let ((res "test"))
-        ;      (putchar 46)
-        ;      (print (heap-index))
-        ;      (putchar 46)
-        ;      res))
 ))
-
