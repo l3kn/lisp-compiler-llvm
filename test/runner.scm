@@ -161,5 +161,16 @@
     '((symbol->string (string->symbol "01234567890123456789012345678901234567890")) "0123456789012345678901234567890")
     ))
 
+; and / or
+
+(test-programs
+  (list
+    '((and #t #t #t) "#t")
+    '((and #t #t #f) "#f")
+    '((and #f #f #f) "#f")
+    '((or #t #t #t) "#t")
+    '((or #t #t #f) "#t")
+    '((or #f #f #f) "#f")))
+
 
 (display-test-stats)
