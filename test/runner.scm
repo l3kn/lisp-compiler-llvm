@@ -145,6 +145,10 @@
   (list
     '((string-length "hello world") "11")
     '((string-append* (list "foo" "bar" "baz")) "foobarbaz")
+    '((string-eq? "foo" "foo") "#t")
+    '((string-eq? "foo" "bar") "#f")
+    '((string-eq? "fooo" "foo") "#f")
+    '((string-eq? "foo" "fooo") "#f")
   ))
 
 ; Symbols
