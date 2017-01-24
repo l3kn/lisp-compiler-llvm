@@ -1,4 +1,4 @@
-(include "macros.scm")
+(include "compatibility.scm")
 (include "stdlib.scm")
 
 (def tag_mask #b111)
@@ -12,7 +12,6 @@
 (defn immediate? (x)
   (or (fixnum? x)
       (boolean? x)
-      (char? x)
       (null? x)))
 
 (defn atomic? (x)
@@ -36,11 +35,8 @@
 ; (include "syntax/derived/or.scm")
 (include "syntax/if.scm")
 (include "syntax/begin.scm")
-(include "syntax/cond.scm")
 (include "syntax/let.scm")
 (include "syntax/string.scm")
-(include "syntax/pipe.scm")
-(include "syntax/list.scm")
 
 (include "preprocessing/syntax-desugar.scm")
 (include "preprocessing/alpha-convert.scm")
