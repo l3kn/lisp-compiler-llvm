@@ -59,3 +59,5 @@
 (define rrfrst cddadr)
 (define rrrfst cdddar)
 (define rrrrst cddddr)
+
+(define fixnum? number?)
