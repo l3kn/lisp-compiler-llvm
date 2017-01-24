@@ -83,32 +83,10 @@ define i64 @prim_string-eq_questionmark_(i64 %s1, i64 %s2) {
   %s1_ptr = inttoptr i64 %s1_raw to i8*
   %s2_ptr = inttoptr i64 %s2_raw to i8*
 
-  %index = alloca i64
-  store i64 0, i64* %index
-  br label %loop
-loop:
-  %cur_index = load i64, i64* %index
-
-  %char1_ptr = getelementptr i8, i8* %s1_ptr, i64 %cur_index
-  %char1 = load i8, i8* %char1_ptr
-  %char2_ptr = getelementptr i8, i8* %s2_ptr, i64 %cur_index
-  %char2 = load i8, i8* %char2_ptr
-
-  ; c1 == c2 == 0 => end, true 
-  %any = or i8 %char1, %char2
-  %tmp1 = icmp eq i8 %any, 0
-  br i1 %tmp1, label %true, label %cont1
-cont1:
-  ; c1 == c2 => continue
-  %tmp2 = icmp eq i8 %char1, %char2
-  br i1 %tmp2, label %cont2, label %cont3
-cont2:
-  %tmp3 = add i64 %cur_index, 1
-  store i64 %tmp3, i64* %index
-  br label %loop
-cont3:
-  ; else => false
-  ret i64 31 ; false
+  %tmp = call i1 @internal_string-cmp(i8* %s1_ptr, i8* %s2_ptr)
+  br i1 %tmp, label %true, label %false
 true:
   ret i64 63
+false:
+  ret i64 31
 }
