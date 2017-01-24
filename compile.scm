@@ -154,7 +154,7 @@
   (defn main ()
         (let ((str "test"))
           (inspect (__heap-index))
-          (inspect str)
+          (inspect (eq? (string->symbol "foo") (string->symbol "foo")))
           ; (inspect (string-length (symbol->string (string->symbol str))))
           (inspect (__heap-index))
         ))

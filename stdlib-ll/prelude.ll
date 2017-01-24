@@ -69,15 +69,39 @@ define i64 @internal_symbol-create(i8* %string) {
 }
 
 define i64 @prim_string-_greater_symbol(i64 %string) {
+  %symbol_table_base = load i8*, i8** @symbol_table_base
+  %symbol_table_index = load i64, i64* @symbol_table_index
+
   %tmp1 = xor i64 %string, 5
-  %tmp2 = inttoptr i64 %tmp1 to i8*
+  %str_ptr = inttoptr i64 %tmp1 to i8*
 
-  ;%search_index = 
+  %search_index = alloca i64
+  store i64 0, i64* %search_index
 
-  %tmp3 = call i64 @internal_symbol-create(i8* %tmp2)
+  ; TODO: This doesn't handle the case where %search_index > %symbol_table_size
+  ; or len(%string) > 31
+  br label %loop
+  loop:
+    %cur_search_index = load i64, i64* %search_index
+    %reached_end = icmp sge i64 %cur_search_index, %symbol_table_index
+    br i1 %reached_end, label %create_new, label %cont
+  cont:
+    %symbol_index = shl i64 %cur_search_index, 5
+    %symbol_ptr = getelementptr i8, i8* %symbol_table_base, i64 %cur_search_index
 
-  %res = xor i64 %tmp3, 1
-  ret i64 %res
+    %tmp2 = add i64 %cur_search_index, 1
+    store i64 %tmp2, i64* %search_index
+
+    %found = call i1 @internal_string-cmp(i8* %str_ptr, i8* %symbol_ptr)
+    br i1 %found, label %ret_found, label %loop
+  ret_found:
+    %tmp6 = ptrtoint i8* %symbol_ptr to i64
+    %tmp7 = xor i64 %tmp6, 1
+    ret i64 %tmp7
+  create_new:
+    %tmp4 = call i64 @internal_symbol-create(i8* %str_ptr)
+    %tmp5 = xor i64 %tmp4, 1
+    ret i64 %tmp5
 }
 
 define i64 @prim_symbol-_greater_string(i64 %symbol) {
@@ -116,9 +140,9 @@ cont2:
   br label %loop
 cont3:
   ; else => false
-  ret i1 0 ; false
+  ret i1 false
 true:
-  ret i1 1
+  ret i1 true
 }
 
 ; Internal helper functions for working w/ the heap

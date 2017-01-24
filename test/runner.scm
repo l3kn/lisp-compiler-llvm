@@ -149,6 +149,8 @@
     '((string-eq? "foo" "bar") "#f")
     '((string-eq? "fooo" "foo") "#f")
     '((string-eq? "foo" "fooo") "#f")
+    '((eq? "foo" "foo") "#f")
+    '((let ((s "foo")) (eq? s s)) "#t")
   ))
 
 ; Symbols
@@ -159,6 +161,8 @@
     '((symbol->string (string->symbol "test")) "test")
     ; Test that symbols have a max length of 31 chars
     '((symbol->string (string->symbol "01234567890123456789012345678901234567890")) "0123456789012345678901234567890")
+    '((eq? (string->symbol "foo") (string->symbol "foo")) "#t")
+    '((eq? (string->symbol "foo") (string->symbol "bar")) "#f")
     ))
 
 ; and / or
