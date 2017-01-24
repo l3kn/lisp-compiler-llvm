@@ -3,25 +3,24 @@ declare void @free(i8*)
 declare i8 @putchar(i8)
 declare void @llvm.memcpy.p0i8.p0i8.i64(i8*, i8*, i64, i32, i1)
 
-declare void @print_ptr(i64)
-declare void @puts_ptr(i64)
-
 @heap_base = global i8* zeroinitializer, align 8
 @heap_index = global i64 0, align 8
 
 @symbol_table_base = global i8* zeroinitializer, align 8
 @symbol_table_index = global i64 0, align 8
 
-define i64 @scheme_body() {
+define void @main() {
   %cells = call i8* @calloc(i32 10000, i32 8)
   store i8* %cells, i8** @heap_base, align 8
 
   %symbols = call i8* @calloc(i32 10000, i32 256)
   store i8* %symbols, i8** @symbol_table_base, align 8
 
-  %res = call i64 @prim_main()
+  call i64 @prim_main()
+
   call void @free(i8* %cells)
-  ret i64 %res
+  call void @free(i8* %symbols)
+  ret void
 }
 
 ; Wrappers for external functions

@@ -8,7 +8,7 @@ link:
 
 compile:
 	llc output.ll -o output.s -O1 -x86-asm-syntax=intel
-	gcc -m64 -masm=intel -o output print_ptr.c output.s entry.s runner.c
+	gcc -m64 -masm=intel -o output output.s
 
 run:
 	./output
