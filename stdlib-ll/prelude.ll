@@ -49,7 +49,7 @@ define i64 @internal_symbol-create(i8* %string) {
 
   ; Each entry is 2^5 = 32 bytes long
   %next_symbol_index = shl i64 %symbol_table_index, 5
-  %next_symbol_ptr = getelementptr i8, i8* %symbol_table_base, i64 %symbol_table_index
+  %next_symbol_ptr = getelementptr i8, i8* %symbol_table_base, i64 %next_symbol_index
 
   ; TODO: This is pretty hacky,
   ; if the symbol is < 31 chars long,
@@ -87,7 +87,7 @@ define i64 @prim_string-_greater_symbol(i64 %string) {
     br i1 %reached_end, label %create_new, label %cont
   cont:
     %symbol_index = shl i64 %cur_search_index, 5
-    %symbol_ptr = getelementptr i8, i8* %symbol_table_base, i64 %cur_search_index
+    %symbol_ptr = getelementptr i8, i8* %symbol_table_base, i64 %symbol_index
 
     %tmp2 = add i64 %cur_search_index, 1
     store i64 %tmp2, i64* %search_index

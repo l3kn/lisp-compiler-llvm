@@ -157,6 +157,9 @@
     '((string-eq? "foo" "fooo") "#f")
     '((eq? "foo" "foo") "#f")
     '((let ((s "foo")) (eq? s s)) "#t")
+    '((string-substring "hello world" 0 3) "hel")
+    '((string-substring "hello world" 1 3) "el")
+    '((string-substring "hello world" 3 3) "")
   ))
 
 ; Symbols
@@ -211,6 +214,11 @@
     '((read "-0") "0")
     '((read "1234") "1234")
     '((read "-1234") "-1234")
+    '((read "       \t\n\r  \t-1234") "-1234")
+    '((read ";commentfoobar\t\n\r  \t-1234;comment") "-1234")
+    '((read "(1 2 3)") "(1 . (2 . (3 . ())))")
+    '((read "(foo bar baz)") "('foo . ('bar . ('baz . ())))")
+    '((eq? (read "foo") (read "foo")) "#t")
     ))
 
 (display-test-stats)

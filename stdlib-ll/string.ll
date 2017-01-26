@@ -105,3 +105,34 @@ define i64 @prim_string-ref(i64 %string, i64 %idx) {
 
   ret i64 %tmp4
 }
+
+define i64 @prim_string-substring(i64 %string, i64 %from_, i64 %to_) {
+  %s_raw = xor i64 %string, 5
+  %s_ptr = inttoptr i64 %s_raw to i8*
+
+  %from = lshr i64 %from_, 3
+  %to = lshr i64 %to_, 3
+
+  %index = alloca i64
+  %new_ptr = call i64 @internal_heap-current-pointer()
+
+  store i64 %from, i64* %index
+  br label %loop
+loop:
+  %cur_index = load i64, i64* %index
+  %char_ptr = getelementptr i8, i8* %s_ptr, i64 %cur_index
+  %char = load i8, i8* %char_ptr
+
+  %res = icmp eq i64 %cur_index, %to
+  br i1 %res, label %end, label %cont
+cont:
+  call i64 @internal_heap-store-byte(i8 %char)
+  %tmp = add i64 %cur_index, 1
+  store i64 %tmp, i64* %index
+  br label %loop
+end:
+  call i64 @internal_heap-store-byte(i8 0)
+  call void @internal_heap-align-index()
+  %new_str = xor i64 %new_ptr, 5
+  ret i64 %new_str
+}

@@ -48,28 +48,116 @@
         (print (any->string val))
         (newline))
 
+  (defn puts (val)
+        (print val)
+        (newline))
+
   (defn read (str)
-        (read_ str 0 (string-length str) 0))
+        (rst (read_ str 0 (string-length str))))
 
   (defn char-is-digit? (char)
     (let ((ord (char->fixnum char)))
       (and (fx<=? 48 ord) (fx>=? 57 ord))))
 
-  (defn read_ (str idx len acc)
-        (let ((char (string-ref str idx)))
-          (cond ((eq? char #\-)
-                 (fxneg (read-fixnum str (fxadd1 idx) len 0)))
-                ((char-is-digit? char)
-                 (read-fixnum str idx len 0))
-                (else "<unknown>"))))
+  (defn char-is-letter? (char)
+    (let ((ord (char->fixnum char)))
+      (or (and (fx<=? 65 ord) (fx>=? 90 ord))
+          (and (fx<=? 97 ord) (fx>=? 122 ord)))))
 
-  (defn read-fixnum (str idx len acc)
+  (defn char-is-special? (char)
+        (or (eq? char #\<)
+            (eq? char #\>)
+            (eq? char #\=)
+            (eq? char #\-)
+            (eq? char #\+)
+            (eq? char #\*)
+            (eq? char #\\)
+            (eq? char #\_)))
+
+  (defn char-is-valid-symbol? (char)
+        (or (char-is-letter? char)
+            (char-is-special? char)
+            (char-is-digit? char)))
+
+  (defn read_ (str idx len)
+        ; (puts "reading")
+        ; (inspect str)
+        ; (inspect idx)
         (if (fx>=? idx len)
-            acc
+            (cons idx "EOF")
+            (let ((char (string-ref str idx)))
+              (cond 
+                ; Skip whitespace
+                ((or (eq? char #\tab)
+                     (eq? char #\newline)
+                     (eq? char #\return)
+                     (eq? char #\space))
+                 (read_ str (fxadd1 idx) len))
+                ((eq? char #\;)
+                 (read_ str
+                        (skip-comment str (fxadd1 idx) len)
+                        len))
+                ((and (eq? char #\-)
+                      (char-is-digit? (string-ref str (fxadd1 idx))))
+                 (read-fixnum str (fxadd1 idx) len 0 #t))
+                ((eq? char #\()
+                 (read-list str (fxadd1 idx) len))
+                ((char-is-digit? char)
+                 (read-fixnum str idx len 0 #f))
+                ; this would allow symbols like '0foo, too,
+                ; but because of the `char-is-digit?` clause above
+                ; this should never happen
+                ((char-is-valid-symbol? char)
+                 (let ((end-of-symbol (find-end-of-symbol str idx len)))
+                   (cons end-of-symbol
+                         (string->symbol (string-substring str idx end-of-symbol)))))
+                (else
+                  (cons idx "<unknown>"))))))
+
+  (defn find-end-of-symbol (str idx len)
+        (if (fx>=? idx len)
+            idx
+            (let ((char (string-ref str idx)))
+              (if (char-is-valid-symbol? char)
+                  (find-end-of-symbol str (fxadd1 idx) len)
+                  idx))))
+
+  (defn read-list (str idx len)
+        ; (puts "reading list")
+        ; (inspect idx)
+        (let ((char (string-ref str idx)))
+          (cond 
+            ((eq? char #\)) (cons (fxadd1 idx) (list)))
+            (else
+              (let* ((res (read_ str idx len))
+                     (new-idx (fst res))
+                     (val (rst res)))
+                (let* ((rest (read-list str new-idx len))
+                       (new-idx2 (fst rest))
+                       (val2 (rst rest)))
+                  (cons new-idx2
+                        (cons val val2))))))))
+
+  (defn read-fixnum (str idx len acc neg)
+        (if (fx>=? idx len)
+            (cons idx (if neg (fxneg acc) acc))
             (let* ((char (string-ref str idx)))
               (if (char-is-digit? char)
                   (let ((val (fx- (char->fixnum char) 48)))
-                    (read-fixnum str (fxadd1 idx) len (fx+ val (fx* acc 10))))
-                  acc))))
+                    (read-fixnum str
+                                 (fxadd1 idx)
+                                 len
+                                 (fx+ val (fx* acc 10))
+                                 neg))
+                  (cons idx (if neg (fxneg acc) acc))))))
+
+  (defn skip-comment (str idx len)
+        (if (fx>=? idx len)
+            idx
+            (let* ((char (string-ref str idx)))
+              (if (or (eq? char #\newline) (eq? char #\return))
+                  (fxadd1 idx)
+                  (skip-comment str (fxadd1 idx) len)))))
+
 ))
 

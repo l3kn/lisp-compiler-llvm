@@ -1,4 +1,4 @@
-(def empty-env '())
+(def empty-env (list))
 
 (defn extend-env (var val env)
   (cons (cons var val) env))
