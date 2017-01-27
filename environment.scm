@@ -23,6 +23,7 @@
   (loop vars vals empty-env))
 
 (defn lookup (var env)
+  ; (print ">>>> looking up " var " in " env)
   (cond
     ((null? env)
      (error "Trying to lookup unbound variable: " var))

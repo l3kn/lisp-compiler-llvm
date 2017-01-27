@@ -7,8 +7,10 @@ link:
 	cat stdlib-ll/*.ll body.ll > output.ll
 
 compile:
-	llc output.ll -o output.s -O1 -x86-asm-syntax=intel
-	gcc -m64 -masm=intel -o output output.s
+	llc output.ll -o output.s -O1
+	# -x86-asm-syntax=intel
+	gcc -m64 -o output output.s
+	# -masm=intel 
 
 run:
 	./output

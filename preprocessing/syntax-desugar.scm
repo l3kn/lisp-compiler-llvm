@@ -20,14 +20,27 @@
     ((begin? expr)
      (make-sequence
        (map syntax-desugar (begin-expressions expr))))
+    ((tagged-list? expr 'def)
+     (let ((name (frst expr))
+           (value (frrst expr)))
+       (list 'def name (syntax-desugar value))))
     ((defn? expr)
      (let* ((name (defn-name expr))
             (args (defn-args expr))
             ; TODO:
             ; We can't use `defn-body` here
             ; because it does some conversions
-            (body (rrrst expr)))
+            (body (defn-body expr)))
        (make-defn name args (map syntax-desugar body))))
+    ((tagged-list? expr 'defn)
+     (let* ((name (defn-name expr))
+            (args (defn-args expr))
+            ; TODO:
+            ; We can't use `defn-body` here
+            ; because it does some conversions
+            (body (defn-body expr)))
+       (syntax-desugar (list 'def name (list 'fn args body)))))
+       ; (make-defn name args (map syntax-desugar body))))
     ((list? expr)
      (map syntax-desugar expr))
     ((atomic? expr) expr)

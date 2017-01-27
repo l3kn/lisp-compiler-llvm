@@ -24,9 +24,6 @@
             ""
             (string-append (fst lst) (string-append* (rst lst)))))
 
-  (defn pair->string (pair)
-        (string-append* (list "(" (any->string (fst pair)) " . " (any->string (rst pair)) ")")))
-
   (defn any->string (val)
         (cond
           ((eq? val #t) "#t")
@@ -43,6 +40,9 @@
           ((symbol? val)
            (string-append "'" (symbol->string val)))
           (else "unknown")))
+
+  (defn pair->string (pair)
+        (string-append* (list "(" (any->string (fst pair)) " . " (any->string (rst pair)) ")")))
 
   (defn inspect (val)
         (print (any->string val))
