@@ -163,9 +163,9 @@
                   (skip-comment str (fxadd1 idx) len)))))
 
   (defn map (f lst)
-        (null? lst
-               (list)
-               (cons (f (fst lst))
-                     (map f (rst lst)))))
+        (if (null? lst)
+            lst
+            (cons (f (fst lst))
+                  (map f (rst lst)))))
 ))
 

@@ -187,6 +187,7 @@
                     string-length string-append
                     string=? string-ref string-substring
                     closure-arity
+                    ; TODO: some preprocessing step does not handle begin
                     begin
                     )))
 
@@ -251,17 +252,7 @@
   (defn fib (n)
         (if (fx<=? n 1) n (fx+ (fib (fx- n 1))
                                (fib (fx- n 2)))))
+  (inspect (map fib (list 1 2 3 4 5 6)))
   (inspect fib)
+  (inspect (fib a))
 ))
-
-
-; (print lambdas)
-
-; (emit-program '(
-;   (defn main ()
-;           ; (inspect (__heap-index))
-;           (inspect (read "-12"))
-;           ; (inspect (eq? (string->symbol "foo") (string->symbol "foo")))
-;           ; (inspect (string-length (symbol->string (string->symbol str))))
-;           ; (inspect (__heap-index))
-;   )))
