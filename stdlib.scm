@@ -2,6 +2,7 @@
   (defn fixnum? (val) (eq? (__tag val) 0))
   (defn symbol? (val) (eq? (__tag val) 1))
   (defn char? (val) (eq? (__tag val) 2))
+  (defn closure? (val) (eq? (__tag val) 4))
   (defn string? (val) (eq? (__tag val) 5))
   (defn pair? (val) (eq? (__tag val) 6))
 
@@ -39,6 +40,8 @@
            val)
           ((symbol? val)
            (string-append "'" (symbol->string val)))
+          ((closure? val)
+           (string-append* (list "<closure/" (fixnum->string (closure-arity val)) ">")))
           (else "unknown")))
 
   (defn pair->string (pair)
@@ -159,5 +162,10 @@
                   (fxadd1 idx)
                   (skip-comment str (fxadd1 idx) len)))))
 
+  (defn map (f lst)
+        (null? lst
+               (list)
+               (cons (f (fst lst))
+                     (map f (rst lst)))))
 ))
 

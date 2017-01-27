@@ -137,7 +137,8 @@
     ((tagged-list? expr 'closure)
      (let* ((tmp (generate-var))
             (arity (frrst expr)))
-       (emit (format "  ~A = ptrtoint i64 ~A* @lambda_~A to i64" var (arg-str arity) (frst expr)))
+       (emit (format "  ~A = ptrtoint i64 ~A* @lambda_~A to i64" tmp (arg-str arity) (frst expr)))
+       (emit (format "  ~A = call i64 @internal_make-closure(i64 ~A, i64 ~A)" var tmp (immediate-rep arity)))
        ))
     ((tagged-list? expr 'def)
      (let ((tmp (generate-var))
@@ -164,7 +165,8 @@
                    (tmp3 (generate-var))
                    (arity (length args)))
                    (emit-variable-ref tmp1 env name)
-                   (emit (format "  ~A = inttoptr i64 ~A to i64 ~A*" tmp3 tmp1 (arg-str arity)))
+                   (emit (format "  ~A = call i64 @internal_closure-function(i64 ~A)" tmp2 tmp1))
+                   (emit (format "  ~A = inttoptr i64 ~A to i64 ~A*" tmp3 tmp2 (arg-str arity)))
                    (emit (format "  ~A = call i64 ~A(~A)" var tmp3 (string-join2 vars ", ")))
                    )
              ))
@@ -184,6 +186,7 @@
                     __tag __value __heap-index
                     string-length string-append
                     string=? string-ref string-substring
+                    closure-arity
                     begin
                     )))
 
@@ -248,7 +251,7 @@
   (defn fib (n)
         (if (fx<=? n 1) n (fx+ (fib (fx- n 1))
                                (fib (fx- n 2)))))
-  (inspect (fib a))
+  (inspect fib)
 ))
 
 

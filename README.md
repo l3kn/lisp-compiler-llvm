@@ -7,6 +7,7 @@
   * 000: Integer
   * 001: Symbol
   * 010: Char
+  * 100: Closure
   * 101: String
   * 110: Pair
   * 111: Hardcoded primitives, #t, #f, '() 
