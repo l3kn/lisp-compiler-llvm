@@ -1,14 +1,3 @@
-(defn begin? (expr) (tagged-list? expr 'begin))
-(defn begin-expressions (expr) (rst expr))
-
-(defn make-sequence (expressions)
-  (if (null? (rst expressions))
-      (fst expressions)
-      (make-begin expressions)))
-
-(defn make-begin (expressions)
-  (cons 'begin expressions))
-
 (defn emit-begin (var env expr)
   (emit-begin_ var env (begin-expressions expr)))
 

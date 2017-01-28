@@ -1,6 +1,6 @@
 (include "compatibility.scm")
 (include "stdlib.scm")
-(include "environment.scm")
+(include "syntax.scm")
 (include "helper.scm")
 (include "llvm.scm")
 (include "syntax/if.scm")
@@ -42,45 +42,32 @@
 (defn variable? (expr) (symbol? expr))
 
 (defn emit-immediate (var expr)
-  (let ((tmp (generate-var)))
-    (emit-alloca tmp)
-    (emit-store (immediate-rep expr) tmp)
-    (emit-load var tmp)))
+      (~>> expr
+           immediate-rep
+           fixnum->string
+           (emit-copy var)))
 
-(defn defn? (expr) (tagged-list? expr 'defprim))
-(def defn-name frst)
-(def defn-args frrst)
-(defn defn-body (expr)
-  (if (= 1 (length (rrrst expr)))
-      (frrrst expr)
-      (cons 'begin (rrrst expr))))
-
-(defn make-defn (name args body)
-  (cons 'defprim
-        (cons name
-              (cons args body))))
-
-; (defn emit-toplevel-expr (expr)
-;   (cond
-;     ((defn? expr)
-;      (let* ((name (defn-name expr))
-;             (args (defn-args expr))
-;             (args-with-vars (map (fn (arg) (cons arg (generate-var))) args))
-;             (args-string
-;               (string-join2 (map (fn (a) (string-append "i64 " (rst a))) args-with-vars) ", ")))
-;        (print (string-append* (list "define i64 @" (escape name) "(" args-string ") {")))
-;        (emit-expr "%res" args-with-vars (defn-body expr))
-;        (emit-ret "%res")
-;        (print "}")))
-;      (else (error "Invalid toplevel expression: " expr))))
+(defn emit-toplevel-expr (expr)
+  (cond
+    ((defn? expr)
+     (let* ((name (defn-name expr))
+            (args (defn-args expr))
+            (args-with-vars (map (fn (arg) (cons arg (generate-var))) args))
+            (args-string
+              (string-join2 (map (fn (a) (string-append "i64 " (rst a))) args-with-vars) ", ")))
+       (print (string-append* (list "define i64 @" (escape name) "(" args-string ") {")))
+       (emit-expr "%res" args-with-vars (defn-body expr))
+       (emit-ret "%res")
+       (print "}")))
+     (else (error "Invalid toplevel expression: " expr))))
 
 (defn emit-lambda (expr)
   (let* ((name (fst expr))
          (lmbda (frst expr))
-         (args (lambda-args lmbda))
+         (args (fn-params lmbda))
          (arity (length args))
-         (body (lambda-body lmbda))
-         (prep-body (pipe body normalize-term))
+         (body (fn-body lmbda))
+         (prep-body (~> body normalize-term))
          (args-with-vars (map (fn (arg) (cons arg (generate-var))) args))
          (args-string
            (string-join2 (map (fn (a) (string-append "i64 " (rst a))) args-with-vars) ", ")))
@@ -110,20 +97,27 @@
        (emit-expr tmp2 env env_)
        (emit-call3 var "@internal_make-closure" tmp1 (fixnum->string (immediate-rep arity)) tmp2)
        ))
-    ((tagged-list? expr 'def)
-     (let ((tmp (generate-var))
-           (name (frst expr))
-           (value (frrst expr)))
-       (emit-expr tmp env value)
-       (emit-store tmp (string-append "@var_" (escape name)))))
+    ((def? expr)
+     (let ((tmp (generate-var)))
+       (emit-expr tmp env (def-value expr))
+       (emit-store tmp (string-append "@var_" (escape (def-name expr))))))
+    ; For now, `set!` is just converted to `def` in `closure-convert.scm`,
+    ; the only difference is, that `def` adds an element to the list of global vars
+    ; ((tagged-list? expr 'set!)
+    ;  (let ((tmp (generate-var))
+    ;        (name (frst expr))
+    ;        (value (frrst expr)))
+    ;    (emit-expr tmp env value)
+    ;    (emit-store tmp (string-append "@var_" (escape name)))))
     ((list? expr)
      (let* ((name (fst expr))
             (args (rst expr))
             (vars (map (fn (arg)
                          (string-append
                            "i64 "
+                           ; TODO: why can't this be replaced w/ `lookup`?
                            (let ((res (assoc arg env)))
-                             (if res (rst res) (show (immediate-rep arg))))))
+                             (if res (rst res) (fixnum->string (immediate-rep arg))))))
                        args)))
        (if (primitive? name)
          (print (string-append* (list "  " var " = call i64 @" (escape name) "(" (string-join2 vars ", ") ")" )))
@@ -145,12 +139,8 @@
 (defn emit-variable-ref (var env expr)
   (let ((var_ (lookup-or expr #f env)))
     (if var_
-      (let ((tmp (generate-var)))
-        (emit-alloca tmp)
-        (emit-store var_ tmp)
-        (emit-load var tmp))
-      (let ((tmp (generate-var)))
-        (emit-load var (string-append "@var_" (escape expr)))))))
+      (emit-copy var var_)
+      (emit-load var (string-append "@var_" (escape expr))))))
 
 (defn emit-symbol (var expr)
   (let ((tmp (generate-var)))
@@ -158,9 +148,9 @@
     (emit-call1 var "@prim_string-_greater_symbol" tmp)))
 
 (defn emit-program (exprs)
-  (let ((preprocessed (map (fn (expr) (pipe expr syntax-desugar alpha-convert-expr closure-convert normalize-term))
+  (let ((preprocessed (map (fn (expr) (~> expr syntax-desugar alpha-convert-expr closure-convert normalize-term))
                            (append stdlib exprs))))
-    (for-each emit-global-var global_vars)
+    (for-each emit-global-var global-vars)
     (for-each emit-lambda lambdas)
     (print "define i64 @prim_main() {")
     (for-each (fn (expr) (emit-expr (generate-var) empty-env expr)) preprocessed)
@@ -168,36 +158,20 @@
     (print "}")
 ))
 
-; (defn debug-program (exprs)
-;   (let ((preprocessed (map (fn (expr)
-;                                (pipe expr syntax-desugar alpha-convert-expr closure-convert normalize-term))
-;                            (append stdlib exprs))))
-;     (print ">>> Global vars")
-;     (for-each print global_vars)
-;     (print ">>> Lambdas")
-;     (for-each print lambdas)
-;     (print ">>> Expressions")
-;     (for-each print preprocessed)
-; ))
-
-(emit-program '(
-; (debug-program '(
-  (def x 1)
-
-  (let ((x (fx+ x x))
-        (x (fx+ x x))
-        (x (fx+ x x)))
-    (inspect x))
-
-  (let* ((x (fx+ x x))
-        (x (fx+ x x))
-        (x (fx+ x x)))
-    (inspect x))
-
-  (inspect (read "(1 2 3)"))
-  ; (def a 10)
-  ; (defn fib (n)
-  ;       (if (fx<=? n 1) n (fx+ (fib (fx- n 1))
-  ;                              (fib (fx- n 2)))))
-  ; (inspect (map fib (list 1 2 3 4 5 6)))
+(defn debug-program (exprs)
+  (let ((preprocessed (map (fn (expr)
+                               (~> expr syntax-desugar alpha-convert-expr closure-convert normalize-term))
+                           (append stdlib exprs))))
+    (print ">>> Global vars")
+    (for-each print global-vars)
+    (print ">>> Lambdas")
+    (for-each print lambdas)
+    (print ">>> Expressions")
+    (for-each print preprocessed)
 ))
+
+(def infile (fst (command-line-arguments)))
+(emit-program (read-file infile))
+; (debug-program (read-file infile))
+
+(defn id (x) x)

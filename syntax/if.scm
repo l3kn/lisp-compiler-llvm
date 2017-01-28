@@ -1,10 +1,3 @@
-(def (if? expr) (tagged-list? expr 'if))
-(def if-test frst)
-(def if-consequent frrst)
-(def if-alternative frrrst)
-
-(defn make-if (test con alt) (list 'if test con alt))
-
 (defn emit-if (var env expr)
   (let ((true-label (unique-label "true"))
         (false-label (unique-label "false"))

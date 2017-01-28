@@ -16,16 +16,27 @@
      (define name
        (lambda args . body)))))
 
-(define-syntax pipe
+(define-syntax ~>
   (syntax-rules ()
-    [(_ x)
+    [(~> x)
      x]
-    [(_ x (s ss ...))
+    [(~> x (s ss ...))
      (s x ss ...)]
-    [(_ x y)
+    [(~> x y)
      (y x)]
-    [(_ x y z ...)
-     (pipe (pipe x y) z ...)]))
+    [(~> x y z ...)
+     (~> (~> x y) z ...)]))
+
+(define-syntax ~>>
+  (syntax-rules ()
+    [(~>> x)
+     x]
+    [(~>> x (s ss ...))
+     (s ss ... x)]
+    [(~>> x y)
+     (y x)]
+    [(~>> x y z ...)
+     (~>> (~>> x y) z ...)]))
 
 (define fst car)
 (define rst cdr)
@@ -79,3 +90,5 @@
       (if (null? lst)
           ""
           (string-append (fst lst) (string-append* (rst lst)))))
+
+(defn id (x) x)

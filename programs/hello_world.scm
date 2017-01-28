@@ -7,12 +7,6 @@
 (defn emit-load (var from)
   (print (string-append* (list "  " var " = load i64, i64* " from))))
 
-(defn emit-copy (var var_)
-      (let ((tmp (generate-var)))
-        (emit-alloca tmp)
-        (emit-store var_ tmp)
-        (emit-load var tmp)))
-
 (defn emit-label (name)
   (print (string-append name ":")))
 
@@ -33,3 +27,31 @@
 
 (defn emit-call3 (var name arg1 arg2 arg3)
   (print (string-append* (list "  " var " = call i64 " name "(i64 " arg1 ", i64 " arg2 ", i64 " arg3 ")"))))
+
+(defn arg-str (arity)
+  (cond
+    ((eq? arity 0) "")
+    ((eq? arity 1) "i64")
+    (else
+      (string-append "i64, "
+                     (arg-str (sub1 arity))))))
+
+(def var-counter 0)
+; (defn generate-var ()
+;   (begin
+;     (set! var-counter (add1 var-counter))
+;     (string-append "%tmp"
+;                    (fixnum->string var-counter))))
+
+(inspect var-counter)
+(set! var-counter (add1 var-counter))
+; (begin
+;   (set! var-counter (add1 var-counter))
+;   (set! var-counter (add1 var-counter))
+; )
+(inspect var-counter)
+
+; (newline)
+; (print (generate-var))
+; (newline)
+; (print (generate-var))

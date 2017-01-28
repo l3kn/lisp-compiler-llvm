@@ -1,4 +1,6 @@
-all: generate link compile run
+all: generate body
+
+body: link compile run
 
 generate:
 	csi -s compile.scm > body.ll

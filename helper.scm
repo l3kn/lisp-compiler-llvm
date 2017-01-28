@@ -19,35 +19,35 @@
                      (arg-str (sub1 arity))))))
 
 (defn escape (str)
-  (let ((parts (map ->string (string->list (->string str)))))
-    (string-join
-      (cons "prim_"
-        (map
-          (fn (part)
-            (cond
-              ((equal? part "+") "_plus_")
-              ((equal? part ">") "_greater_")
-              ((equal? part "<") "_less_")
-              ((equal? part "=") "_equal_")
-              ((equal? part "*") "_times_")
-              ((equal? part "/") "_slash_")
-              ((equal? part "?") "_questionmark_")
-              (else part)))
-          parts)))))
+  (~>> str any->string string->list
+       (map any->string)
+       (map escape-char)
+       (cons "prim_")
+       string-join))
+
+(defn escape-char (str)
+      (cond
+        ((equal? str "+") "_plus_")
+        ((equal? str ">") "_greater_")
+        ((equal? str "<") "_less_")
+        ((equal? str "=") "_equal_")
+        ((equal? str "*") "_times_")
+        ((equal? str "/") "_slash_")
+        ((equal? str "?") "_questionmark_")
+        (else str)))
 
 (defn tagged-list? (expr tag)
-  (and (pair? expr)
-       (eq? (car expr) tag)))
+      (and (pair? expr)
+           (eq? (car expr) tag)))
 
 (defn string-join (lst) (foldl string-append "" lst))
-(define (show . args) (string-join (map ->string args)))
 
 (defn map-with-index (f start lst)
-  (if (null? lst)
-      lst
-      (cons
-        (f (fst lst) start)
-        (map-with-index f (add1 start) (rst lst)))))
+      (if (null? lst)
+        lst
+        (cons
+          (f (fst lst) start)
+          (map-with-index f (add1 start) (rst lst)))))
 
 (defn empty-set () (list))
 (defn set (expr) (list expr))
@@ -61,3 +61,24 @@
         (else (set-union*
                 (cons (set-union (fst sets) (frst sets))
                       (rrst sets))))))
+
+(def empty-env (list))
+
+(defn extend-env (var val env)
+      (alist-cons var val env))
+
+(defn extend-env* (vars vals env)
+      (if (null? vars)
+        env
+        (extend-env* (rst vars) (rst vals)
+                     (extend-env (fst vars) (fst vals) env))))
+
+(defn lookup (var env)
+      (let ((res (assoc var env)))
+        (if res
+          (rst res)
+          (error "Trying to lookup unbound variable: " var))))
+
+(defn lookup-or (var alt env)
+      (let ((res (assoc var env)))
+        (if res (rst res) alt)))

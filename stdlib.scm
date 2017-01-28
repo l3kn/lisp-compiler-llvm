@@ -24,6 +24,21 @@
 
   (defn null? (val) (eq? val (list)))
 
+
+  ; For now, the only fixnums are supported
+  ; => just wrap the fixnum functions
+  (defn sub1 (val) (fxsub1 val))
+  (defn add1 (val) (fxadd1 val))
+  (defn + (a b) (fx+ a b))
+  (defn - (a b) (fx- a b))
+  (defn * (a b) (fx* a b))
+  (defn / (a b) (fx/ a b))
+  (defn = (a b) (fx=? a b))
+  (defn < (a b) (fx<? a b))
+  (defn <= (a b) (fx<=? a b))
+  (defn > (a b) (fx>? a b))
+  (defn >= (a b) (fx>=? a b))
+
   (defn fixnum->string_ (fx)
         (if (fxzero? fx)
             ""

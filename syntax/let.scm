@@ -1,14 +1,3 @@
-(defn let? (expr) (tagged-list? expr 'let))
-(def let-bindings frst)
-(def (let-body expr)
-     (make-sequence (rrst expr)))
-
-(def let-binding-variable fst)
-(def let-binding-value frst)
-
-(defn make-let (bindings body)
-  (list 'let bindings body))
-
 (defn emit-let (var env expr)
   (process-let var expr (let-bindings expr) env))
 
