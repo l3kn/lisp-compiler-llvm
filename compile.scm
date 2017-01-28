@@ -60,19 +60,19 @@
         (cons name
               (cons args body))))
 
-(defn emit-toplevel-expr (expr)
-  (cond
-    ((defn? expr)
-     (let* ((name (defn-name expr))
-            (args (defn-args expr))
-            (args-with-vars (map (fn (arg) (cons arg (generate-var))) args))
-            (args-string
-              (string-join2 (map (fn (a) (string-append "i64 " (rst a))) args-with-vars) ", ")))
-       (print (format "define i64 @~A(~A) {" (escape name) args-string))
-       (emit-expr "%res" args-with-vars (defn-body expr))
-       (emit-ret "%res")
-       (print "}")))
-     (else (error "Invalid toplevel expression: " expr))))
+; (defn emit-toplevel-expr (expr)
+;   (cond
+;     ((defn? expr)
+;      (let* ((name (defn-name expr))
+;             (args (defn-args expr))
+;             (args-with-vars (map (fn (arg) (cons arg (generate-var))) args))
+;             (args-string
+;               (string-join2 (map (fn (a) (string-append "i64 " (rst a))) args-with-vars) ", ")))
+;        (print (string-append* (list "define i64 @" (escape name) "(" args-string ") {")))
+;        (emit-expr "%res" args-with-vars (defn-body expr))
+;        (emit-ret "%res")
+;        (print "}")))
+;      (else (error "Invalid toplevel expression: " expr))))
 
 (defn emit-lambda (expr)
   (let* ((name (fst expr))
@@ -84,13 +84,13 @@
          (args-with-vars (map (fn (arg) (cons arg (generate-var))) args))
          (args-string
            (string-join2 (map (fn (a) (string-append "i64 " (rst a))) args-with-vars) ", ")))
-    (print (format "define i64 @lambda_~A(~A) {" name args-string))
+    (print (string-append* (list "define i64 @lambda_" (symbol->string name) "(" args-string ") {")))
     (emit-expr "%res" args-with-vars prep-body)
     (emit-ret "%res")
     (print "}")))
 
 (defn emit-global-var (var)
-      (print (format "@var_~A = weak global i64 0" (escape var))))
+  (print (string-append* (list "@var_" (escape var) " = weak global i64 0"))))
 
 (defn emit-expr (var env expr)
   (cond
@@ -126,7 +126,7 @@
                              (if res (rst res) (show (immediate-rep arg))))))
                        args)))
        (if (primitive? name)
-         (print (format "  ~A = call i64 @~A(~A)" var (escape name) (string-join2 vars ", ")))
+         (print (string-append* (list "  " var " = call i64 @" (escape name) "(" (string-join2 vars ", ") ")" )))
          (begin
            (let ((tmp1 (generate-var))
                  (tmp2 (generate-var))
@@ -136,8 +136,8 @@
              (emit-variable-ref tmp1 env name)
              (emit-call1 tmp2 "@internal_closure-function" tmp1)
              (emit-call1 tmp4 "@prim_closure-env" tmp1)
-             (print (format "  ~A = inttoptr i64 ~A to i64 (~A)*" tmp3 tmp2 (arg-str (add1 arity))))
-             (print (format "  ~A = call i64 ~A(i64 ~A, ~A)" var tmp3 tmp4 (string-join2 vars ", "))))))))
+             (print (string-append* (list "  " tmp3 " = inttoptr i64 " tmp2 " to i64 (" (arg-str (add1 arity)) ")*")))  
+             (print (string-append* (list "  " var  " = call i64 " tmp3 "(i64 " tmp4 ", " (string-join2 vars ", ") ")"))))))))
     ((variable? expr) (emit-variable-ref var env expr))
     (else
       (error "Unknown expression: " expr))))
