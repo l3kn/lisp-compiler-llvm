@@ -1,4 +1,5 @@
 (defn emit-string (var str)
+  (emit (format "  ; emit-string, ~A = ~A" var str))
   (let ((len (string-length str))
         (tmp (generate-var)))
     (emit (format "  ~A = call i64 @internal_heap-current-pointer()" tmp))

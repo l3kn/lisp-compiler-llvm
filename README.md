@@ -22,10 +22,13 @@
 
 ### Syntax Desugaring
 
+#### Input
+
 * `let*` to nested `let`s
 * `and` to nested `if`s
 * `or` to nested `if`s
 * `cond` to nested `if`s
+* `defn` to `def` + `lambda`
 
 ### Alpha-Conversion
 

@@ -1,10 +1,10 @@
 (def stdlib '(
-  (defn fixnum? (val) (eq? (__tag val) 0))
   (defn symbol? (val) (eq? (__tag val) 1))
   (defn char? (val) (eq? (__tag val) 2))
   (defn closure? (val) (eq? (__tag val) 4))
   (defn string? (val) (eq? (__tag val) 5))
   (defn pair? (val) (eq? (__tag val) 6))
+  (defn fixnum? (val) (eq? (__tag val) 0))
 
   (defn null? (val) (eq? val (list)))
 
@@ -168,4 +168,3 @@
             (cons (f (fst lst))
                   (map f (rst lst)))))
 ))
-
