@@ -1,3 +1,5 @@
+(use srfi-1)
+
 (define-syntax fn
   (syntax-rules ()
     ((fn args body)
@@ -61,3 +63,12 @@
 (define rrrrst cddddr)
 
 (define fixnum? number?)
+
+(defn string-join2 (lst sep)
+  (cond
+    ((null? lst) "")
+    ((null? (rst lst)) (fst lst))
+    (else (string-append
+            (string-append (fst lst) sep)
+            (string-join2 (rst lst) sep)))))
+

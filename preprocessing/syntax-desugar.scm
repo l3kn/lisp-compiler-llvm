@@ -80,9 +80,7 @@
         (list (fst fns) var)
         (rst fns))))
 
-(defn cond? (expr)
-  (tagged-list? expr 'cond))
-
+(defn cond? (expr) (tagged-list? expr 'cond))
 (def cond-clauses rst)
 (def cond-clause-test fst)
 (defn cond-clause-action (clause)
