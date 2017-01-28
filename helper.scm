@@ -2,7 +2,8 @@
 (defn generate-var ()
   (begin
     (set! var-counter (add1 var-counter))
-    (format "%tmp~A" (sub1 var-counter))))
+    (string-append "%tmp"
+                   (fixnum->string var-counter))))
 
 (def label-count 0)
 (defn unique-label (name)

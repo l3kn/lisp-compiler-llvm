@@ -72,3 +72,10 @@
             (string-append (fst lst) sep)
             (string-join2 (rst lst) sep)))))
 
+(def any->string ->string)
+(def fixnum->string number->string)
+
+(defn string-append* (lst)
+      (if (null? lst)
+          ""
+          (string-append (fst lst) (string-append* (rst lst)))))
