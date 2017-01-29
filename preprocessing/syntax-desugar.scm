@@ -7,7 +7,7 @@
         ((cond? expr)  (~> expr cond->nested-ifs syntax-desugar))
         ((and? expr)   (~> expr and->if syntax-desugar))
         ((or? expr)    (~> expr or->if syntax-desugar))
-        ((defn? expr)  (~> expr def->def-fn syntax-desugar))
+        ((defn? expr)  (~> expr defn->def-fn syntax-desugar))
         ((let? expr)
          (let* ((bindings (let-bindings expr))
                 (new-bindings
@@ -69,7 +69,7 @@
                         (make-let* body)
                         let*->nested-lets)))))
 
-(defn def->def-fn (expr)
+(defn defn->def-fn (expr)
       (make-def (defn-name expr)
                 (make-fn (defn-args expr) (defn-body expr))))
 

@@ -20,7 +20,7 @@
 (defn fn? (expr) (tagged-list? expr 'fn))
 (defn fn-params (expr) (frst expr))
 (defn fn-body (expr) (frrst expr))
-(defn fn-body_ (expr) (rrrst expr))
+(defn fn-body_ (expr) (rrst expr))
 (defn make-fn (params body)
       (list 'fn params body))
 
@@ -44,7 +44,7 @@
 (defn cond-clauses (expr) (rst expr))
 (defn cond-clause-test (expr) (fst expr))
 (defn cond-clause-action (clause) (frst clause))
-(defn cond-clause-action_ (clause) (rrst clause))
+(defn cond-clause-action_ (clause) (rst clause))
 
 (defn or? (expr) (tagged-list? expr 'or))
 (defn or-arguments (expr) (rst expr))

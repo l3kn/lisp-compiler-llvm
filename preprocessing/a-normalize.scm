@@ -38,17 +38,11 @@
          (make-sequence
            (map normalize-term (begin-expressions expr))))
         ((defprim? expr)
-         (let* ((name (defn-name expr))
-                (args (defn-args expr))
-                ; TODO:
-                ; We can't use `defn-body` here
-                ; because it does some conversions
-                (body (rrrst expr)))
-           (k (make-defprim (defn-name expr)
-                            (defn-args expr)
-                            (~>> expr
-                                 defprim-body
-                                 normalize-term)))))
+         (k (make-defprim (defn-name expr)
+                          (defn-args expr)
+                          (~>> expr
+                               defprim-body
+                               normalize-term))))
         ((if? expr)
          (normalize-name (if-test expr)
                          (fn (t)

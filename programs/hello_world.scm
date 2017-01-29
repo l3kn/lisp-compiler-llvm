@@ -1,5 +1,3 @@
-(print "test")
-
 ; (defn emit-alloca (var)
 ;   (print (string-append* (list "  " var " = alloca i64"))))
 
@@ -57,3 +55,24 @@
 ; ; (print (generate-var))
 ; ; (newline)
 ; ; (print (generate-var))
+
+; (defn map (f lst)
+;       (if (null? lst)
+;         lst
+;         (cons (f (fst lst))
+;               (map f (rst lst)))))
+
+; (defn test ()
+;       (puts "foob"))
+
+(defn fib (n)
+      (if (fx<=? n 1)
+          n
+          (fx+ (fib (fx- n 1))
+               (fib (fx- n 2)))))
+
+(puts "test")
+(inspect (fib 10))
+(puts "test")
+; ; (print (char->string (fixnum->char (fib 10))))
+; (puts "test")

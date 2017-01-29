@@ -61,7 +61,7 @@
        (print "}")))
      (else (error "Invalid toplevel expression: " expr))))
 
-(defn emit-lambda (expr)
+(defn emit-lambda (env expr)
   (let* ((name (fst expr))
          (lmbda (frst expr))
          (args (fn-params lmbda))
@@ -72,7 +72,7 @@
          (args-string
            (string-join2 (map (fn (a) (string-append "i64 " (rst a))) args-with-vars) ", ")))
     (print (string-append* (list "define i64 @lambda_" (symbol->string name) "(" args-string ") {")))
-    (emit-expr "%res" args-with-vars prep-body)
+    (emit-expr "%res" (append args-with-vars env) prep-body)
     (emit-ret "%res")
     (print "}")))
 
@@ -121,8 +121,7 @@
                        args)))
        ; TODO: call emit-env with an initial env where all closures are bound to ther @var_...
        ; if a value is not in the env, assume it to be primitive
-       (if (symbol? name)
-         (print (string-append* (list "  " var " = call i64 @" (escape name) "(" (string-join2 vars ", ") ")" )))
+       (if (assoc name env)
          (begin
            (let ((tmp1 (generate-var))
                  (tmp2 (generate-var))
@@ -133,16 +132,22 @@
              (emit-call1 tmp2 "@internal_closure-function" tmp1)
              (emit-call1 tmp4 "@prim_closure-env" tmp1)
              (print (string-append* (list "  " tmp3 " = inttoptr i64 " tmp2 " to i64 (" (arg-str (add1 arity)) ")*")))  
-             (print (string-append* (list "  " var  " = call i64 " tmp3 "(i64 " tmp4 ", " (string-join2 vars ", ") ")"))))))))
+             (if (> (length vars) 0)
+                 (print (string-append* (list "  " var  " = call i64 " tmp3 "(i64 " tmp4 ", " (string-join2 vars ", ") ")")))
+                 (print (string-append* (list "  " var  " = call i64 " tmp3 "(i64 " tmp4 ")"))))))
+         (print (string-append* (list "  " var " = call i64 @" (escape name) "(" (string-join2 vars ", ") ")" ))))))
     ((variable? expr) (emit-variable-ref var env expr))
     (else
       (error "Unknown expression: " expr))))
 
 (defn emit-variable-ref (var env expr)
-  (let ((var_ (lookup-or expr #f env)))
-    (if var_
-      (emit-copy var var_)
-      (emit-load var (string-append "@var_" (escape expr))))))
+  ; (print ">>> emit-var-ref " expr)
+  (let ((res (assoc expr env)))
+    (if res
+      (if (eq? (string-ref (rst res) 0) #\@)
+          (emit-load var (rst res))
+          (emit-copy var (rst res)))
+      (error "can't find " var " in env"))))
 
 (defn emit-symbol (var expr)
   (let ((tmp (generate-var)))
