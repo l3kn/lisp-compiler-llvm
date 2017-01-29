@@ -71,7 +71,8 @@
 
 (defn defn->def-fn (expr)
       (make-def (defn-name expr)
-                (make-fn (defn-args expr) (defn-body expr))))
+                (make-fn (defn-args expr)
+                         (make-sequence (defn-body_ expr)))))
 
 (defn list->nested-cons (expr)
       (list->nested-cons_ (rst expr)))

@@ -30,9 +30,7 @@
 ;         (let ((e3 (~> e2 alpha-convert-expr)))
 ;           (print e3)
 ;           (let ((e4 (~> e3 closure-convert)))
-;             (print e4)
-;             (let ((e5 (~> e3 normalize-term)))
-;               (print e5))))))
+;             (print e4)))))
 
 
 ; (for-each debug 

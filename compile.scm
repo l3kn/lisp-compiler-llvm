@@ -9,7 +9,6 @@
 (include "syntax/string.scm")
 (include "preprocessing/syntax-desugar.scm")
 (include "preprocessing/alpha-convert.scm")
-(include "preprocessing/a-normalize.scm")
 (include "preprocessing/closure-convert.scm")
 
 (def tag_mask #b111)
@@ -67,12 +66,11 @@
          (args (fn-params lmbda))
          (arity (length args))
          (body (fn-body lmbda))
-         (prep-body (~> body normalize-term))
          (args-with-vars (map (fn (arg) (cons arg (generate-var))) args))
          (args-string
            (string-join2 (map (fn (a) (string-append "i64 " (rst a))) args-with-vars) ", ")))
     (print (string-append* (list "define i64 @lambda_" (symbol->string name) "(" args-string ") {")))
-    (emit-expr "%res" (append args-with-vars env) prep-body)
+    (emit-expr "%res" (append args-with-vars env) body)
     (emit-ret "%res")
     (print "}")))
 
@@ -156,7 +154,7 @@
 
 (defn debug-program (exprs)
   (let ((preprocessed (map (fn (expr)
-                               (~> expr syntax-desugar alpha-convert-expr closure-convert normalize-term))
+                               (~> expr syntax-desugar alpha-convert-expr closure-convert))
                            (append stdlib exprs))))
     (print ">>> Global vars")
     (for-each print global-vars)

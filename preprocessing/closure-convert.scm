@@ -30,7 +30,10 @@
                                   0
                                   free-vars)))
            (let ((new-body
-                   (substitute replacements (fn-body expr))))
+                   (~>> expr
+                       fn-body
+                       closure-convert
+                       (substitute replacements))))
              (register-lamdba name
                               (make-fn (cons 'env (fn-params expr))
                                        new-body))
