@@ -34,18 +34,21 @@
          (normalize-name (frrrst expr)
                          (fn (t)
                              (k (list 'make-closure (frst expr) (frrst expr) t)))))
-        ; ((defn? expr)
-        ;  (let* ((name (defn-name expr))
-        ;         (args (defn-args expr))
-        ;         ; TODO:
-        ;         ; We can't use `defn-body` here
-        ;         ; because it does some conversions
-        ;         (body (rrrst expr)))
-        ;    (k (make-defn (defn-name expr)
-        ;                  (defn-args expr)
-        ;                  (~>> expr
-        ;                       rrrst
-        ;                       (map normalize-term))))))
+        ((begin? expr)
+         (make-sequence
+           (map normalize-term (begin-expressions expr))))
+        ((defprim? expr)
+         (let* ((name (defn-name expr))
+                (args (defn-args expr))
+                ; TODO:
+                ; We can't use `defn-body` here
+                ; because it does some conversions
+                (body (rrrst expr)))
+           (k (make-defprim (defn-name expr)
+                            (defn-args expr)
+                            (~>> expr
+                                 defprim-body
+                                 normalize-term)))))
         ((if? expr)
          (normalize-name (if-test expr)
                          (fn (t)
@@ -62,11 +65,13 @@
 
 (defn normalize-name (m k)
       (normalize m (fn (n)
-                       (if (or (immediate? n) (primitive? n))
-                         (k n)
-                         (let ((t (gensym)))
-                           (make-let (list (list t n))
-                                     (k t)))))))
+                       ; TODO: Why can't this be `(if (atomic? n))`?
+                       ; 1: Strings don't work here
+                       (if (or (immediate? n) (symbol? n))
+                           (k n)
+                           (let ((t (gensym)))
+                             (make-let (list (list t n))
+                                       (k t)))))))
 
 (def (normalize-name* m* k)
      (if (null? m*)

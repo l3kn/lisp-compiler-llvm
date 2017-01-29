@@ -1,4 +1,5 @@
 (defn syntax-desugar (expr)
+      ; (print "synde " expr)
       (cond
         ((pipe? expr)  (~> expr pipe->nested-calls syntax-desugar))
         ((list_? expr) (~> expr list->nested-cons syntax-desugar))
@@ -15,15 +16,39 @@
                                  (syntax-desugar (let-binding-value binding))))
                        bindings)))
            (make-let new-bindings
-                     (~> expr let-body syntax-desugar))))
+                     (~> expr
+                         let-body_
+                         make-sequence
+                         syntax-desugar))))
         ((begin? expr)
-         (~>> expr
-              begin-expressions
-              (map syntax-desugar)
-              make-sequence))
+         (let ((expressions (begin-expressions expr)))
+           (if (null? (rst expressions))
+               (fst expressions)
+               (~>> expressions
+                    (map syntax-desugar)
+                    make-begin))))
+
+        ; ((begin? expr)
+        ;  (cons 'begin
+        ;  (~>> expr
+        ;       begin-expressions
+        ;       (map syntax-desugar))))
         ((def? expr)
          (make-def (def-name expr)
                    (syntax-desugar (def-value expr))))
+        ((defprim? expr)
+         (make-defprim (defprim-name expr)
+                       (defprim-args expr)
+                       (~> expr
+                           defprim-body_
+                           make-sequence
+                           syntax-desugar)))
+        ((fn? expr)
+         (make-fn (fn-params expr)
+                  (~> expr
+                      fn-body_
+                      make-sequence
+                      syntax-desugar)))
         ((assignment? expr)
          (make-assignment (assignment-name expr)
                           (syntax-desugar (assignment-value expr))))
@@ -35,7 +60,7 @@
 
 (defn let*->nested-lets (expr)
       (let* ((bindings (let-bindings expr))
-             (body (let-body expr)))
+             (body (make-sequence (let-body_ expr))))
         (if (null? bindings)
           body
           (make-let (list (fst bindings))
@@ -78,14 +103,14 @@
                      (second-clause (frst clauses)))
                  (if (eq? 'else (cond-clause-test second-clause))
                    (make-if (cond-clause-test first-clause)
-                            (cond-clause-action first-clause)
-                            (cond-clause-action second-clause))
+                            (make-sequence (cond-clause-action_ first-clause))
+                            (make-sequence (cond-clause-action_ second-clause)))
                    (error "Last clause of cond must be else: " expr))))
               (else
                 (let ((first-clause (fst clauses))
                       (rest-clauses (rst clauses)))
                   (make-if (cond-clause-test first-clause)
-                           (cond-clause-action first-clause)
+                           (make-sequence (cond-clause-action_ first-clause))
                            (helper rest-clauses))))))
       (helper (cond-clauses expr)))
 

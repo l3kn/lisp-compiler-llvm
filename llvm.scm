@@ -8,10 +8,11 @@
   (print (string-append* (list "  " var " = load i64, i64* " from))))
 
 (defn emit-copy (var var_)
-      (let ((tmp (generate-var)))
-        (emit-alloca tmp)
-        (emit-store var_ tmp)
-        (emit-load var tmp)))
+  (print (string-append* (list "  " var " = add i64 " var_ ", 0"))))
+      ; (let ((tmp (generate-var)))
+      ;   (emit-alloca tmp)
+      ;   (emit-store var_ tmp)
+      ;   (emit-load var tmp)))
 
 (defn emit-label (name)
   (print (string-append name ":")))

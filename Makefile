@@ -6,7 +6,7 @@ generate:
 	csi -s compile.scm > body.ll
 
 link:
-	cat stdlib-ll/*.ll body.ll > output.ll
+	cat stdlib-ll/*.ll stdlib.ll body.ll > output.ll
 
 compile:
 	llc output.ll -o output.s -O1

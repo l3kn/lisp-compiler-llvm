@@ -49,9 +49,9 @@
 
 (defn emit-toplevel-expr (expr)
   (cond
-    ((defn? expr)
-     (let* ((name (defn-name expr))
-            (args (defn-args expr))
+    ((defprim? expr)
+     (let* ((name (defprim-name expr))
+            (args (defprim-args expr))
             (args-with-vars (map (fn (arg) (cons arg (generate-var))) args))
             (args-string
               (string-join2 (map (fn (a) (string-append "i64 " (rst a))) args-with-vars) ", ")))
@@ -119,7 +119,9 @@
                            (let ((res (assoc arg env)))
                              (if res (rst res) (fixnum->string (immediate-rep arg))))))
                        args)))
-       (if (primitive? name)
+       ; TODO: call emit-env with an initial env where all closures are bound to ther @var_...
+       ; if a value is not in the env, assume it to be primitive
+       (if (symbol? name)
          (print (string-append* (list "  " var " = call i64 @" (escape name) "(" (string-join2 vars ", ") ")" )))
          (begin
            (let ((tmp1 (generate-var))
@@ -147,17 +149,6 @@
     (emit-string tmp (symbol->string expr))
     (emit-call1 var "@prim_string-_greater_symbol" tmp)))
 
-(defn emit-program (exprs)
-  (let ((preprocessed (map (fn (expr) (~> expr syntax-desugar alpha-convert-expr closure-convert normalize-term))
-                           (append stdlib exprs))))
-    (for-each emit-global-var global-vars)
-    (for-each emit-lambda lambdas)
-    (print "define i64 @prim_main() {")
-    (for-each (fn (expr) (emit-expr (generate-var) empty-env expr)) preprocessed)
-    (emit-ret (fixnum->string 0))
-    (print "}")
-))
-
 (defn debug-program (exprs)
   (let ((preprocessed (map (fn (expr)
                                (~> expr syntax-desugar alpha-convert-expr closure-convert normalize-term))
@@ -169,9 +160,3 @@
     (print ">>> Expressions")
     (for-each print preprocessed)
 ))
-
-(def infile (fst (command-line-arguments)))
-(emit-program (read-file infile))
-; (debug-program (read-file infile))
-
-(defn id (x) x)

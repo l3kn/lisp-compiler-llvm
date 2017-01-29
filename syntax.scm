@@ -6,17 +6,21 @@
 (defn defn? (expr) (tagged-list? expr 'defn))
 (defn defn-name (expr) (frst expr))
 (defn defn-args (expr) (frrst expr))
-(defn defn-body (expr) (make-sequence (rrrst expr)))
+(defn defn-body (expr) (frrrst expr))
+(defn defn-body_ (expr) (rrrst expr))
+(defn make-defn (name args body) (list 'defn name args body))
 
 (defn defprim? (expr) (tagged-list? expr 'defprim))
 (defn defprim-name (expr) (frst expr))
 (defn defprim-args (expr) (frrst expr))
-(defn defprim-body (expr) (make-sequence (rrrset expr)))
+(defn defprim-body (expr) (frrrst expr))
+(defn defprim-body_ (expr) (rrrst expr))
+(defn make-defprim (name args body) (list 'defprim name args body))
 
 (defn fn? (expr) (tagged-list? expr 'fn))
 (defn fn-params (expr) (frst expr))
 (defn fn-body (expr) (frrst expr))
-(defn fn-body (expr) (make-sequence (rrst expr)))
+(defn fn-body_ (expr) (rrrst expr))
 (defn make-fn (params body)
       (list 'fn params body))
 
@@ -39,8 +43,8 @@
 (defn cond? (expr) (tagged-list? expr 'cond))
 (defn cond-clauses (expr) (rst expr))
 (defn cond-clause-test (expr) (fst expr))
-(defn cond-clause-action (clause)
-     (make-sequence (rst clause)))
+(defn cond-clause-action (clause) (frst clause))
+(defn cond-clause-action_ (clause) (rrst clause))
 
 (defn or? (expr) (tagged-list? expr 'or))
 (defn or-arguments (expr) (rst expr))
@@ -50,8 +54,8 @@
 
 (defn let? (expr) (tagged-list? expr 'let))
 (defn let-bindings (expr) (frst expr))
-(defn let-body (expr)
-     (make-sequence (rrst expr)))
+(defn let-body (expr) (frrst expr))
+(defn let-body_ (expr) (rrrst expr))
 
 (defn let-binding-variable (expr) (fst expr))
 (defn let-binding-value (expr) (frst expr))
@@ -67,9 +71,9 @@
 (defn begin-expressions (expr) (rst expr))
 
 (defn make-sequence (expressions)
-  (if (null? (rst expressions))
-      (fst expressions)
-      (make-begin expressions)))
+  (cond ((null? expressions) expressions)
+        ((null? (rst expressions)) (fst expressions))
+        (else (make-begin expressions))))
 
 (defn make-begin (expressions)
   (cons 'begin expressions))

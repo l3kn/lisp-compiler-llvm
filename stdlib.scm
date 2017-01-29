@@ -15,48 +15,48 @@
                     )))
 
 (def stdlib '(
-  (defn symbol? (val) (eq? (__tag val) 1))
-  (defn char? (val) (eq? (__tag val) 2))
-  (defn closure? (val) (eq? (__tag val) 4))
-  (defn string? (val) (eq? (__tag val) 5))
-  (defn pair? (val) (eq? (__tag val) 6))
-  (defn fixnum? (val) (eq? (__tag val) 0))
+  (defprim symbol? (val) (eq? (__tag val) 1))
+  (defprim char? (val) (eq? (__tag val) 2))
+  (defprim closure? (val) (eq? (__tag val) 4))
+  (defprim string? (val) (eq? (__tag val) 5))
+  (defprim pair? (val) (eq? (__tag val) 6))
+  (defprim fixnum? (val) (eq? (__tag val) 0))
 
-  (defn null? (val) (eq? val (list)))
+  (defprim null? (val) (eq? val (list)))
 
 
   ; For now, the only fixnums are supported
   ; => just wrap the fixnum functions
-  (defn sub1 (val) (fxsub1 val))
-  (defn add1 (val) (fxadd1 val))
-  (defn + (a b) (fx+ a b))
-  (defn - (a b) (fx- a b))
-  (defn * (a b) (fx* a b))
-  (defn / (a b) (fx/ a b))
-  (defn = (a b) (fx=? a b))
-  (defn < (a b) (fx<? a b))
-  (defn <= (a b) (fx<=? a b))
-  (defn > (a b) (fx>? a b))
-  (defn >= (a b) (fx>=? a b))
+  (defprim sub1 (val) (fxsub1 val))
+  (defprim add1 (val) (fxadd1 val))
+  (defprim + (a b) (fx+ a b))
+  (defprim - (a b) (fx- a b))
+  (defprim * (a b) (fx* a b))
+  (defprim / (a b) (fx/ a b))
+  (defprim = (a b) (fx=? a b))
+  (defprim < (a b) (fx<? a b))
+  (defprim <= (a b) (fx<=? a b))
+  (defprim > (a b) (fx>? a b))
+  (defprim >= (a b) (fx>=? a b))
 
-  (defn fixnum->string_ (fx)
+  (defprim fixnum->string_ (fx)
         (if (fxzero? fx)
             ""
             (string-append
               (fixnum->string_ (fx/ fx 10))
               (digit->string (fxrem fx 10)))))
-  (defn fixnum->string (fx)
+  (defprim fixnum->string (fx)
         (cond
           ((fxzero? fx) "0")
           ((fx<? fx 0) (string-append "-" (fixnum->string_ (fx- 0 fx))))
           (else (fixnum->string_ fx))))
 
-  (defn string-append* (lst)
+  (defprim string-append* (lst)
         (if (null? lst)
             ""
             (string-append (fst lst) (string-append* (rst lst)))))
 
-  (defn any->string (val)
+  (defprim any->string (val)
         (cond
           ((eq? val #t) "#t")
           ((eq? val #f) "#f")
@@ -75,30 +75,30 @@
            (string-append* (list "<closure/" (fixnum->string (closure-arity val)) ">")))
           (else "unknown")))
 
-  (defn pair->string (pair)
+  (defprim pair->string (pair)
         (string-append* (list "(" (any->string (fst pair)) " . " (any->string (rst pair)) ")")))
 
-  (defn inspect (val)
+  (defprim inspect (val)
         (print (any->string val))
         (newline))
 
-  (defn puts (val)
+  (defprim puts (val)
         (print val)
         (newline))
 
-  (defn read (str)
+  (defprim read (str)
         (rst (read_ str 0 (string-length str))))
 
-  (defn char-is-digit? (char)
+  (defprim char-is-digit? (char)
     (let ((ord (char->fixnum char)))
       (and (fx<=? 48 ord) (fx>=? 57 ord))))
 
-  (defn char-is-letter? (char)
+  (defprim char-is-letter? (char)
     (let ((ord (char->fixnum char)))
       (or (and (fx<=? 65 ord) (fx>=? 90 ord))
           (and (fx<=? 97 ord) (fx>=? 122 ord)))))
 
-  (defn char-is-special? (char)
+  (defprim char-is-special? (char)
         (or (eq? char #\<)
             (eq? char #\>)
             (eq? char #\=)
@@ -108,12 +108,12 @@
             (eq? char #\\)
             (eq? char #\_)))
 
-  (defn char-is-valid-symbol? (char)
+  (defprim char-is-valid-symbol? (char)
         (or (char-is-letter? char)
             (char-is-special? char)
             (char-is-digit? char)))
 
-  (defn read_ (str idx len)
+  (defprim read_ (str idx len)
         ; (puts "reading")
         ; (inspect str)
         ; (inspect idx)
@@ -148,7 +148,7 @@
                 (else
                   (cons idx "<unknown>"))))))
 
-  (defn find-end-of-symbol (str idx len)
+  (defprim find-end-of-symbol (str idx len)
         (if (fx>=? idx len)
             idx
             (let ((char (string-ref str idx)))
@@ -156,7 +156,7 @@
                   (find-end-of-symbol str (fxadd1 idx) len)
                   idx))))
 
-  (defn read-list (str idx len)
+  (defprim read-list (str idx len)
         ; (puts "reading list")
         ; (inspect idx)
         (let ((char (string-ref str idx)))
@@ -172,7 +172,7 @@
                   (cons new-idx2
                         (cons val val2))))))))
 
-  (defn read-fixnum (str idx len acc neg)
+  (defprim read-fixnum (str idx len acc neg)
         (if (fx>=? idx len)
             (cons idx (if neg (fxneg acc) acc))
             (let* ((char (string-ref str idx)))
@@ -185,7 +185,7 @@
                                  neg))
                   (cons idx (if neg (fxneg acc) acc))))))
 
-  (defn skip-comment (str idx len)
+  (defprim skip-comment (str idx len)
         (if (fx>=? idx len)
             idx
             (let* ((char (string-ref str idx)))
@@ -193,7 +193,7 @@
                   (fxadd1 idx)
                   (skip-comment str (fxadd1 idx) len)))))
 
-  (defn map (f lst)
+  (defprim map (f lst)
         (if (null? lst)
             lst
             (cons (f (fst lst))
