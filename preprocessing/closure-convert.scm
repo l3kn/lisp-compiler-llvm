@@ -87,6 +87,8 @@
         ; ((and (symbol? expr) (not (primitive? expr)))
         ((and (symbol? expr) (not (assoc expr (global-var-env))))
          (set expr))
+        ((tagged-list? expr 'quote)
+         (empty-set))
         ((list? expr)
          ; (set-union* (map free expr)))
          (if (null? expr)
