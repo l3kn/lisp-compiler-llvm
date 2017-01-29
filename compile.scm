@@ -112,30 +112,30 @@
     ((list? expr)
      (let* ((name (fst expr))
             (args (rst expr))
-            (vars (map (fn (arg)
-                         (string-append
-                           "i64 "
-                           ; TODO: why can't this be replaced w/ `lookup`?
-                           (let ((res (assoc arg env)))
-                             (if res (rst res) (fixnum->string (immediate-rep arg))))))
-                       args)))
+            (args-with-vars (map (fn (a) (cons a (generate-var))) args)))
+       (for-each (fn (av)
+                     (emit-expr (rst av) env (fst av)))
+                 args-with-vars)
+       (let ((vars
+               (map (fn (av) (string-append "i64 " (rst av)))
+                    args-with-vars)))
        ; TODO: call emit-env with an initial env where all closures are bound to ther @var_...
        ; if a value is not in the env, assume it to be primitive
        (if (assoc name env)
-         (begin
-           (let ((tmp1 (generate-var))
-                 (tmp2 (generate-var))
-                 (tmp3 (generate-var))
-                 (tmp4 (generate-var))
-                 (arity (length args)))
-             (emit-variable-ref tmp1 env name)
-             (emit-call1 tmp2 "@internal_closure-function" tmp1)
-             (emit-call1 tmp4 "@prim_closure-env" tmp1)
-             (print (string-append* (list "  " tmp3 " = inttoptr i64 " tmp2 " to i64 (" (arg-str (add1 arity)) ")*")))  
-             (if (> (length vars) 0)
-                 (print (string-append* (list "  " var  " = call i64 " tmp3 "(i64 " tmp4 ", " (string-join2 vars ", ") ")")))
-                 (print (string-append* (list "  " var  " = call i64 " tmp3 "(i64 " tmp4 ")"))))))
-         (print (string-append* (list "  " var " = call i64 @" (escape name) "(" (string-join2 vars ", ") ")" ))))))
+           (begin
+             (let ((tmp1 (generate-var))
+                   (tmp2 (generate-var))
+                   (tmp3 (generate-var))
+                   (tmp4 (generate-var))
+                   (arity (length args)))
+               (emit-variable-ref tmp1 env name)
+               (emit-call1 tmp2 "@internal_closure-function" tmp1)
+               (emit-call1 tmp4 "@prim_closure-env" tmp1)
+               (print (string-append* (list "  " tmp3 " = inttoptr i64 " tmp2 " to i64 (" (arg-str (add1 arity)) ")*")))  
+               (if (> (length vars) 0)
+                   (print (string-append* (list "  " var  " = call i64 " tmp3 "(i64 " tmp4 ", " (string-join2 vars ", ") ")")))
+                   (print (string-append* (list "  " var  " = call i64 " tmp3 "(i64 " tmp4 ")"))))))
+           (print (string-append* (list "  " var " = call i64 @" (escape name) "(" (string-join2 vars ", ") ")" )))))))
     ((variable? expr) (emit-variable-ref var env expr))
     (else
       (error "Unknown expression: " expr))))

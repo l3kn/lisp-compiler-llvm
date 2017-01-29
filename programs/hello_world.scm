@@ -62,17 +62,19 @@
 ;         (cons (f (fst lst))
 ;               (map f (rst lst)))))
 
-; (defn test ()
-;       (puts "foob"))
+; (defn fib (n)
+;       (if (fx<=? n 1)
+;           n
+;           (fx+ (fib (fx- n 1))
+;                (fib (fx- n 2)))))
 
-(defn fib (n)
-      (if (fx<=? n 1)
-          n
-          (fx+ (fib (fx- n 1))
-               (fib (fx- n 2)))))
+; (inspect fib)
+(print "hello world")
 
-(puts "test")
-(inspect (fib 10))
-(puts "test")
+; (inspect (map fib (list 1 2 3 4)))
+
+; (puts "test")
+; (inspect (fib 10))
+; (puts "test")
 ; ; (print (char->string (fixnum->char (fib 10))))
 ; (puts "test")

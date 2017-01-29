@@ -1,7 +1,7 @@
 (include "compile.scm")
 
 (defn emit-lib (exprs)
-  (let ((preprocessed (map (fn (expr) (~> expr syntax-desugar alpha-convert-expr closure-convert normalize-term))
+  (let ((preprocessed (map (fn (expr) (~> expr syntax-desugar alpha-convert-expr closure-convert)); normalize-term))
                            exprs)))
     (for-each emit-global-var global-vars)
     (for-each emit-lambda lambdas)
