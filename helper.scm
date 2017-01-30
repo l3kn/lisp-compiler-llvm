@@ -18,29 +18,26 @@
       (string-append "i64, "
                      (arg-str (sub1 arity))))))
 
+(defn escape-char (char) char
+      (cond
+        ((eq? char #\+) "_plus_")
+        ((eq? char #\>) "_greater_")
+        ((eq? char #\<) "_less_")
+        ((eq? char #\=) "_equal_")
+        ((eq? char #\*) "_times_")
+        ((eq? char #\/) "_slash_")
+        ((eq? char #\?) "_questionmark_")
+        (else (char->string char))))
+
 (defn escape (str)
   (~>> str any->string string->list
-       (map any->string)
        (map escape-char)
        (cons "prim_")
-       string-join))
-
-(defn escape-char (str)
-      (cond
-        ((equal? str "+") "_plus_")
-        ((equal? str ">") "_greater_")
-        ((equal? str "<") "_less_")
-        ((equal? str "=") "_equal_")
-        ((equal? str "*") "_times_")
-        ((equal? str "/") "_slash_")
-        ((equal? str "?") "_questionmark_")
-        (else str)))
+       string-append*))
 
 (defn tagged-list? (expr tag)
       (and (pair? expr)
-           (eq? (car expr) tag)))
-
-(defn string-join (lst) (foldl string-append "" lst))
+           (eq? (fst expr) tag)))
 
 (defn map-with-index (f start lst)
       (if (null? lst)
@@ -50,9 +47,20 @@
           (map-with-index f (add1 start) (rst lst)))))
 
 (defn empty-set () (list))
-(defn set (expr) (list expr))
-(defn set-union (a b) (lset-union eq? a b))
-(defn set-subtract (a b) (lset-difference eq? a b))
+(defn singleton-set (expr) (list expr))
+
+(defn set-subtract (a b)
+      (filter (fn (e) (not (member? e b)))
+              a))
+
+(defn set-union (a b)
+      (cond
+        ((null? a) b)
+        ((null? b) a)
+        ((member? (fst b) a)
+         (set-union a (rst b)))
+        (else
+          (set-union (cons (fst b) a) (rst b)))))
 
 (defn set-union* (sets)
       (cond

@@ -38,7 +38,8 @@
 
 (defn list_? (expr) (tagged-list? expr 'list))
 
-(defn pipe? (expr) (tagged-list? expr 'pipe))
+(defn thread-first? (expr) (tagged-list? expr '~>))
+(defn thread-last? (expr) (tagged-list? expr '~>>))
 
 (defn cond? (expr) (tagged-list? expr 'cond))
 (defn cond-clauses (expr) (rst expr))
@@ -59,6 +60,11 @@
 
 (defn let-binding-variable (expr) (fst expr))
 (defn let-binding-value (expr) (frst expr))
+
+(defn quote? (expr) (tagged-list? expr 'quote))
+(defn quasiquote? (expr) (tagged-list? expr 'quasiquote))
+(defn unquote? (expr) (tagged-list? expr 'unquote))
+(defn unquote-splicing? (expr) (tagged-list? expr 'unquote-splicing))
 
 (defn make-let (bindings body)
   (list 'let bindings body))

@@ -7,7 +7,7 @@
 (include "syntax/begin.scm")
 (include "syntax/let.scm")
 (include "syntax/string.scm")
-(include "preprocessing/syntax-desugar.scm")
+(include "preprocessing/desugar.scm")
 (include "preprocessing/alpha-convert.scm")
 (include "preprocessing/closure-convert.scm")
 
@@ -78,10 +78,14 @@
   (print (string-append* (list "@var_" (escape var) " = weak global i64 0"))))
 
 (defn emit-expr (var env expr)
+  ; (print "  ;" var " = " expr)
   (cond
     ((immediate? expr) (emit-immediate var expr))
     ((string? expr) (emit-string var expr))
-    ((tagged-list? expr 'quote) (emit-symbol var (frst expr)))
+    ((tagged-list? expr 'quote)
+     (if (eq? (frst expr) '())
+         (emit-immediate var '())
+         (emit-symbol var (frst expr))))
     ((if? expr) (emit-if var env expr))
     ((begin? expr) (emit-begin var env expr))
     ((let? expr) (emit-let var env expr))
@@ -136,7 +140,9 @@
            (print (string-append* (list "  " var " = call i64 @" (escape name) "(" (string-join2 vars ", ") ")" )))))))
     ((variable? expr) (emit-variable-ref var env expr))
     (else
-      (error "Unknown expression: " expr))))
+      (error "Unknown expression: " expr)))
+  )
+  ; (print "  ; end of " var " = " expr))
 
 (defn emit-variable-ref (var env expr)
   ; (print ">>> emit-var-ref " expr)
@@ -145,7 +151,8 @@
       (if (eq? (string-ref (rst res) 0) #\@)
           (emit-load var (rst res))
           (emit-copy var (rst res)))
-      (error "can't find " var " in env"))))
+      ; (emit-load var (string-append "@var_" (escape expr))))))
+      (error "can't find " expr " in env"))))
 
 (defn emit-symbol (var expr)
   (let ((tmp (generate-var)))
@@ -154,7 +161,7 @@
 
 (defn debug-program (exprs)
   (let ((preprocessed (map (fn (expr)
-                               (~> expr syntax-desugar alpha-convert-expr closure-convert))
+                               (~> expr desugar alpha-convert-expr closure-convert))
                            (append stdlib exprs))))
     (print ">>> Global vars")
     (for-each print global-vars)

@@ -2,8 +2,11 @@ all: generate body
 
 body: link compile run
 
+stdlib:
+	csi -s compile-lib.scm programs/stdlib.scm > stdlib.ll
+
 generate:
-	csi -s compile.scm > body.ll
+	csi -s compile-program.scm programs/main.scm > body.ll
 
 link:
 	cat stdlib-ll/*.ll stdlib.ll body.ll > output.ll

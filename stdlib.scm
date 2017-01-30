@@ -10,7 +10,8 @@
                     string=? string-ref string-substring
                     closure-arity
                     list-ref
-                    inspect
+                    inspect assoc alist-cons
+                    char->string
                     ; TODO: some preprocessing step does not handle begin
                     begin if
                     )))

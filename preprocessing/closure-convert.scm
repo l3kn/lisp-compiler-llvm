@@ -1,8 +1,8 @@
 (defn closure-convert-expr (expr)
       (closure-convert expr))
 
-(def lambdas '())
-(def global-vars '())
+(def lambdas (list))
+(def global-vars (list))
 
 (defn register-lamdba (name body)
       (let ((old-lambdas lambdas))
@@ -86,7 +86,7 @@
                     bindings)))))
         ; ((and (symbol? expr) (not (primitive? expr)))
         ((and (symbol? expr) (not (assoc expr (global-var-env))))
-         (set expr))
+         (singleton-set expr))
         ((tagged-list? expr 'quote)
          (empty-set))
         ((list? expr)

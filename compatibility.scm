@@ -86,9 +86,20 @@
 (def any->string ->string)
 (def fixnum->string number->string)
 
-(defn string-append* (lst)
-      (if (null? lst)
-          ""
-          (string-append (fst lst) (string-append* (rst lst)))))
+(defn string-append* (lst) (foldl string-append "" lst))
 
 (defn id (x) x)
+
+(defn char->string (char) (list->string (list char)))
+
+(defn filter (pred lst)
+         (cond ((null? lst) (list))
+               ((eq? (pred (fst lst)) #t)
+                (cons (fst lst)
+                      (filter pred (rst lst))))
+               (else (filter pred (rst lst)))))
+
+(defn member? (var lst)
+         (cond ((null? lst) #f)
+               ((eq? var (fst lst)) #t)
+               (else (member? var (rst lst)))))
