@@ -97,7 +97,8 @@
     ((def? expr)
      (let ((tmp (generate-var)))
        (emit-expr tmp env (def-value expr))
-       (emit-store tmp (string-append "@var_" (escape (def-name expr))))))
+       (emit-store tmp (string-append "@var_" (escape (def-name expr))))
+       (emit-symbol var 'ok)))
     ; For now, `set!` is just converted to `def` in `closure-convert.scm`,
     ; the only difference is, that `def` adds an element to the list of global vars
     ; ((tagged-list? expr 'set!)
