@@ -8,7 +8,7 @@
 (def label-count 0)
 (defn unique-label (name)
   (set! label-count (add1 label-count))
-  (string-append "L" (number->string label-count) "_" name))
+  (string-append* (list "L" (number->string label-count) "_" name)))
 
 (defn arg-str (arity)
   (cond
