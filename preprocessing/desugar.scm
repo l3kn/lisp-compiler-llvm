@@ -136,8 +136,8 @@
 (defn cond->nested-ifs (expr) (cond->nested-ifs_ (cond-clauses expr)))
 (defn cond->nested-ifs_ (clauses)
       (cond
-        ((null? clauses) (error "Empty cond: " expr))
-        ((null? (rst clauses)) (error "cond must have at least 2 branches: " expr))
+        ((null? clauses) (error "Empty cond"))
+        ((null? (rst clauses)) (error "cond must have at least 2 branches"))
         ((null? (rrst clauses))
          (let ((first-clause (fst clauses))
                (second-clause (frst clauses)))
@@ -145,7 +145,7 @@
              (make-if (cond-clause-test first-clause)
                       (make-sequence (cond-clause-action_ first-clause))
                       (make-sequence (cond-clause-action_ second-clause)))
-             (error "Last clause of cond must be else: " expr))))
+             (error "Last clause of cond must be else"))))
         (else
           (let ((first-clause (fst clauses))
                 (rest-clauses (rst clauses)))

@@ -1,5 +1,4 @@
 (include "compatibility.scm")
-(include "stdlib.scm")
 (include "syntax.scm")
 (include "helper.scm")
 (include "llvm.scm")
