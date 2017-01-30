@@ -126,3 +126,6 @@ Out:
 ## Links
 
 * <http://matt.might.net/articles/a-normalization/>
+* <http://matt.might.net/articles/desugaring-scheme/>
+* <http://matt.might.net/articles/closure-conversion/>
+* <http://www.wilfred.me.uk/blog/2015/02/21/my-first-llvm-compiler/>
