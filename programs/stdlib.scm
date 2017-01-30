@@ -4,7 +4,9 @@
 (defprim string? (val) (eq? (__tag val) 5))
 (defprim pair? (val) (eq? (__tag val) 6))
 (defprim fixnum? (val) (eq? (__tag val) 0))
-
+(defprim boolean? (val)
+         (or (eq? val #t)
+             (eq? val #f)))
 (defprim null? (val) (eq? val '()))
 
 ; For now, the only fixnums are supported
@@ -255,6 +257,18 @@
                (else
                  (cons (fst a)
                        (append (rst a) b)))))
+
+(defprim list? (lst)
+         (if (pair? lst)
+             (list?_ lst)
+             #f))
+
+(defprim list?_ (pair)
+         (cond
+           ((null? (rst pair)) #t)
+           ((not (pair? (rst pair))) #f)
+           (else (list?_ (rst pair)))))
+
 
 (defprim tagged-list? (lst tag)
          (and (not (null? lst))
