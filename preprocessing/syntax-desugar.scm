@@ -1,7 +1,8 @@
 (defn syntax-desugar (expr)
       ; (print "synde " expr)
       (cond
-        ((pipe? expr)  (~> expr pipe->nested-calls syntax-desugar))
+        ((thread-first? expr)  (~> expr thread-first->nested-calls syntax-desugar))
+        ((thread-last? expr)  (~> expr thread-last->nested-calls syntax-desugar))
         ((list_? expr) (~> expr list->nested-cons syntax-desugar))
         ((let*? expr)  (~> expr let*->nested-lets syntax-desugar))
         ((cond? expr)  (~> expr cond->nested-ifs syntax-desugar))
@@ -82,15 +83,33 @@
         (list 'cons (fst elems)
               (list->nested-cons_ (rst elems)))))
 
-(defn pipe->nested-calls (expr)
-      (pipe->nested-calls_ (frst expr)
-                           (rrst expr)))
-(defn pipe->nested-calls_ (var fns)
+(defn thread-first->nested-calls (expr)
+      (thread-first->nested-calls_ (frst expr) (rrst expr)))
+
+(defn thread-last->nested-calls (expr)
+      (thread-last->nested-calls_ (frst expr) (rrst expr)))
+
+(defn thread-first->nested-calls_ (var fns)
       (if (null? fns)
-        var
-        (pipe->nested-calls_
-          (list (fst fns) var)
-          (rst fns))))
+          var
+          (thread-first->nested-calls_
+            (let ((fn (fst fns)))
+              (if (list? fn)
+                  (cons (fst fn)
+                        (cons var
+                              (rst fn)))
+                  (list fn var)))
+            (rst fns))))
+
+(defn thread-last->nested-calls_ (var fns)
+      (if (null? fns)
+          var
+          (thread-last->nested-calls_
+            (let ((fn (fst fns)))
+              (if (list? fn)
+                  (append fn (list var))
+                  (list fn var)))
+            (rst fns))))
 
 (defn cond->nested-ifs (expr)
       (defn helper (clauses)

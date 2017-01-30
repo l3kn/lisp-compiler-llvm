@@ -25,8 +25,8 @@
                 (free-vars (free expr))
                 (replacements
                   (map-with-index (fn (v index)
-                                      (list v
-                                            `(list-ref ,index env)))
+                                      (cons v
+                                            `(list-ref ,index __env)))
                                   0
                                   free-vars)))
            (let ((new-body
@@ -35,7 +35,7 @@
                        closure-convert
                        (substitute replacements))))
              (register-lamdba name
-                              (make-fn (cons 'env (fn-params expr))
+                              (make-fn (cons '__env (fn-params expr))
                                        new-body))
              (list 'make-closure name arity (list->nested-cons_ free-vars)))))
         ((begin? expr)
