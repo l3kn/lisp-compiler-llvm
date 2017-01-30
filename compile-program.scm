@@ -13,13 +13,6 @@
     (print "}"))
 )
 
-
-(defn global-var-env ()
-      (extend-env* global-vars
-                   (map (fn (var) (string-append "@var_" (escape var)))
-                        global-vars)
-                   empty-env))
-
 (def infile (fst (command-line-arguments)))
 (emit-program (read-file infile))
 

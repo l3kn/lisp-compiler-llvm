@@ -4,6 +4,12 @@
 (def lambdas (list))
 (def global-vars (list))
 
+(defn global-var-env ()
+      (extend-env* global-vars
+                   (map (fn (var) (string-append "@var_" (escape var)))
+                        global-vars)
+                   empty-env))
+
 (defn register-lamdba (name body)
       (let ((old-lambdas lambdas))
         (set! lambdas
@@ -84,7 +90,6 @@
                (set-subtract (free body) bound)
                (map (fn (x) (~> x let-binding-value free))
                     bindings)))))
-        ; ((and (symbol? expr) (not (primitive? expr)))
         ((and (symbol? expr) (not (assoc expr (global-var-env))))
          (singleton-set expr))
         ((tagged-list? expr 'quote)
@@ -102,7 +107,7 @@
          ; TODO: Filter out bound vars from the replacements?
          (make-fn (fn-params expr)
                   (substitute replacements (fn-body expr))))
-        ((and (symbol? expr) (not (primitive? expr)))
+        ((symbol? expr)
          (lookup-or expr expr replacements))
         ((list? expr)
          (map (fn (x) (substitute replacements x)) expr))

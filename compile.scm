@@ -2,10 +2,6 @@
 (include "syntax.scm")
 (include "helper.scm")
 (include "llvm.scm")
-(include "syntax/if.scm")
-(include "syntax/begin.scm")
-(include "syntax/let.scm")
-(include "syntax/string.scm")
 (include "preprocessing/desugar.scm")
 (include "preprocessing/alpha-convert.scm")
 (include "preprocessing/closure-convert.scm")
@@ -157,6 +153,75 @@
   (let ((tmp (generate-var)))
     (emit-string tmp (symbol->string expr))
     (emit-call1 var "@prim_string-_greater_symbol" tmp)))
+
+(defn emit-if (var env expr)
+  (let ((true-label (unique-label "true"))
+        (false-label (unique-label "false"))
+        (end-label (unique-label "end"))
+        (test-var (generate-var))
+        (test-res-var (generate-var))
+        (res-var (generate-var))
+        (res-var1 (generate-var))
+        (res-var2 (generate-var)))
+    (emit-expr test-var env (if-test expr))
+    (print (string-append* (list "  " test-res-var " = icmp eq i64 " test-var ", " (fixnum->string (immediate-rep #t)))))
+    (emit-alloca res-var)
+    (print (string-append* (list "  br i1 " test-res-var ", label %" true-label ", label %" false-label)))
+
+    (emit-label true-label)
+    (emit-expr res-var1 env (if-consequent expr))
+    (emit-store res-var1 res-var)
+    (emit-br1 end-label)
+
+    (emit-label false-label)
+    (emit-expr res-var2 env (if-alternative expr))
+    (emit-store res-var2 res-var)
+    (emit-br1 end-label)
+
+    (emit-label end-label)
+    (emit-load var res-var)))
+
+(defn emit-begin (var env expr)
+  (emit-begin_ var env (begin-expressions expr)))
+(defn emit-begin_ (var env lst)
+  (cond ((null? lst) (error "Empty begin"))
+        ((null? (rst lst)) (emit-expr var env (fst lst)))
+        (else
+          (emit-expr (generate-var) env (fst lst))
+          (emit-begin_ var env (rst lst)))))
+
+(defn emit-let (var env expr)
+  (process-let var expr (let-bindings expr) env))
+(defn process-let (var expr bindings new-env)
+  (if (null? bindings)
+      (emit-expr var new-env (let-body expr))
+      (let ((b (fst bindings))
+            (var_ (generate-var)))
+        ; It's ok to use new-env instead of env here,
+        ; because all variable conflicts have been resolved
+        ; during the alpha-conversion step
+        (emit-expr var_ new-env (let-binding-value b))
+        (process-let var expr
+                     (rst bindings)
+                     (extend-env (let-binding-variable b) var_ new-env)))))
+
+(defn emit-string (var str)
+  (let ((len (string-length str))
+        (tmp (generate-var)))
+    (emit-call0 tmp "@internal_heap-current-pointer")
+    (emit-string_ str 0 len)
+    (print "  call i64 @internal_heap-store-byte(i8 0)")
+    (print "  call void @internal_heap-align-index()")
+    (print (string-append* (list "  " var " = or i64 " tmp ", 5")))))
+(defn emit-string_ (str idx len)
+  ; TODO: Rewrite this once one-armed ifs are supported
+  (if (< idx len)
+      (begin
+        (print (string-append* (list "  call i64 @internal_heap-store-byte(i8 "
+                                     (fixnum->string (char->integer (string-ref str idx)))
+                                     ")")))
+        (emit-string_ str (add1 idx) len))
+      'ok))
 
 (defn debug-program (exprs)
   (let ((preprocessed (map (fn (expr)
