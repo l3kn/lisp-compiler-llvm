@@ -8,6 +8,11 @@ define i64 @prim_fx-(i64 %a, i64 %b) {
   ret i64 %tmp
 }
 
+define i64 @prim_fxshl(i64 %n, i64 %sh) {
+  %tmp = shl i64 %n, %sh
+  ret i64 %tmp
+}
+
 define i64 @prim_fxneg(i64 %a) {
   %tmp1 = lshr i64 %a, 3
   %tmp2 = sub i64 0, %tmp1
