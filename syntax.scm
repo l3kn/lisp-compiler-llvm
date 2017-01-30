@@ -55,7 +55,7 @@
 (defn let? (expr) (tagged-list? expr 'let))
 (defn let-bindings (expr) (frst expr))
 (defn let-body (expr) (frrst expr))
-(defn let-body_ (expr) (rrrst expr))
+(defn let-body_ (expr) (rrst expr))
 
 (defn let-binding-variable (expr) (fst expr))
 (defn let-binding-value (expr) (frst expr))
