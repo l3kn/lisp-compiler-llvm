@@ -60,8 +60,8 @@
          `(cons ,(desugar-quote (fst expr))
                 ,(desugar-quote (rst expr))))
         ((null? expr) '())
-        ((immediate? expr) expr)
         ((symbol? expr) `(quote ,expr))
+        ((immediate? expr) expr)
         (else
           (error "Strange value in quote: " expr))))
 
@@ -73,8 +73,12 @@
              (list 'list ''unquote
                    (desugar-quasiquote (sub1 level) (frst expr)))))
         ((quasiquote? expr)
-         `(list 'quasiquote ,(desugar-quasiquote (add1 level)
-                                                 (frst expr))))
+         ; TODO: this does not desugar correctly
+         ; `(list 'quasiquote ,(desugar-quasiquote (add1 level)
+         ;                                         (frst expr))))
+         (list 'list ''quasiquote
+               (desugar-quasiquote (add1 level)
+                                   (frst expr))))
         ((and (pair? expr) (unquote-splicing? (fst expr)))
          (if (eq? level 1)
              `(append ,(frfst expr) ,(desugar-quasiquote level (rst expr)))
