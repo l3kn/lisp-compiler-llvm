@@ -91,6 +91,7 @@
 (defn id (x) x)
 
 (defn char->string (char) (list->string (list char)))
+(defn char->fixnum (char) (char->integer char))
 
 (defn filter (pred lst)
          (cond ((null? lst) (list))

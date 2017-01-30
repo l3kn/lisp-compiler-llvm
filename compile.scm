@@ -26,7 +26,7 @@
     ((fixnum? x) 
      (fxshl x 3))
     ((char? x)
-     (+ (fxshl (char->integer x) 3)
+     (+ (fxshl (char->fixnum x) 3)
         char_tag))
     ((boolean? x)
      (if x true false))
@@ -217,7 +217,10 @@
   (if (< idx len)
       (begin
         (print (string-append* (list "  call i64 @internal_heap-store-byte(i8 "
-                                     (fixnum->string (char->integer (string-ref str idx)))
+                                     (~>> idx
+                                          (string-ref str)
+                                          char->fixnum
+                                          fixnum->string)
                                      ")")))
         (emit-string_ str (add1 idx) len))
       'ok))
