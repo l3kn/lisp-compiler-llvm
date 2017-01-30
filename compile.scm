@@ -95,10 +95,8 @@
        (emit-call3 var "@internal_make-closure" tmp1 (fixnum->string (immediate-rep arity)) tmp2)
        ))
     ((def? expr)
-     (let ((tmp (generate-var)))
-       (emit-expr tmp env (def-value expr))
-       (emit-store tmp (string-append "@var_" (escape (def-name expr))))
-       (emit-symbol var 'ok)))
+     (emit-expr var env (def-value expr))
+     (emit-store var (string-append "@var_" (escape (def-name expr)))))
     ; For now, `set!` is just converted to `def` in `closure-convert.scm`,
     ; the only difference is, that `def` adds an element to the list of global vars
     ; ((tagged-list? expr 'set!)
