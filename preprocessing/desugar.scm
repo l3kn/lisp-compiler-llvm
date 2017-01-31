@@ -62,6 +62,7 @@
         ((null? expr) '())
         ((symbol? expr) `(quote ,expr))
         ((immediate? expr) expr)
+        ((string? expr) expr)
         (else
           (error "Strange value in quote: " expr))))
 

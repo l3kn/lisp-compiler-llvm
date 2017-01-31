@@ -8,7 +8,7 @@
 (def label-count 0)
 (defn unique-label (name)
   (set! label-count (add1 label-count))
-  (string-append* (list "L" (number->string label-count) "_" name)))
+  (string-append* (list "L" (fixnum->string label-count) "_" name)))
 
 (defn arg-str (arity)
   (cond
@@ -46,7 +46,7 @@
           (f (fst lst) start)
           (map-with-index f (add1 start) (rst lst)))))
 
-(defn empty-set () (list))
+(defn empty-set () '())
 (defn singleton-set (expr) (list expr))
 
 (defn set-subtract (a b)
@@ -70,7 +70,7 @@
                 (cons (set-union (fst sets) (frst sets))
                       (rrst sets))))))
 
-(def empty-env (list))
+(def empty-env '())
 
 (defn extend-env (var val env)
       (alist-cons var val env))

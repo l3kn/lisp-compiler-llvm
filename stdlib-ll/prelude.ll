@@ -241,7 +241,13 @@ define i64 @prim___value(i64 %a) {
 }
 
 define i64 @prim___heap-index() {
-  %heap_index = load i64, i64* @heap_index
-  %res = shl i64 %heap_index, 3
+  %index = load i64, i64* @heap_index
+  %res = shl i64 %index, 3
+  ret i64 %res
+}
+
+define i64 @prim___symbol-table-index() {
+  %index = load i64, i64* @symbol_table_index
+  %res = shl i64 %index, 3
   ret i64 %res
 }

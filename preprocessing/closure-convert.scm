@@ -1,8 +1,8 @@
 (defn closure-convert-expr (expr)
       (closure-convert expr))
 
-(def lambdas (list))
-(def global-vars (list))
+(def lambdas '())
+(def global-vars '())
 
 (defn global-var-env ()
       (extend-env* global-vars

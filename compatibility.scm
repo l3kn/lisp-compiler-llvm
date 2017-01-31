@@ -74,14 +74,15 @@
 (define rrrrst cddddr)
 
 (define fixnum? number?)
+(define puts print)
 
-(defn string-join2 (lst sep)
+(defn join (lst sep)
   (cond
     ((null? lst) "")
-    ((null? (rst lst)) (fst lst))
+    ((null? (rst lst)) (any->string (fst lst)))
     (else (string-append
-            (string-append (fst lst) sep)
-            (string-join2 (rst lst) sep)))))
+            (string-append (any->string (fst lst)) sep)
+            (join (rst lst) sep)))))
 
 (def any->string ->string)
 (def fixnum->string number->string)

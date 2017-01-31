@@ -95,7 +95,7 @@
            ((string? val)
             val)
            ((symbol? val)
-            (string-append "'" (symbol->string val)))
+            (symbol->string val))
            ((closure? val)
             (string-append* (list "<closure/" (fixnum->string (closure-arity val)) ">")))
            (else "unknown")))
@@ -104,8 +104,11 @@
          (string-append* (list "(" (any->string (fst pair)) " . " (any->string (rst pair)) ")")))
 
 (defprim inspect (val)
-         (print (any->string val))
-         (newline))
+         (puts (inspect_ val)))
+(defprim inspect_ (val)
+         (cond
+           ((symbol? val) (string-append "'" (symbol->string val)))
+           (else (any->string val))))
 
 (defprim puts (val)
          (print val)
@@ -258,10 +261,23 @@
                  (cons (fst a)
                        (append (rst a) b)))))
 
+(defprim join (lst sep)
+         (cond
+           ((null? lst) "")
+           ((null? (rst lst)) (any->string (fst lst)))
+           (else (string-append
+                   (string-append (any->string (fst lst)) sep)
+                   (join (rst lst) sep)))))
+
 (defprim list? (lst)
          (if (pair? lst)
-             (list?_ lst)
-             #f))
+           (list?_ lst)
+           #f))
+
+(defprim length (lst)
+         (if (null? lst)
+           0
+           (fx+ 1 (length (rst lst)))))
 
 (defprim list?_ (pair)
          (cond
@@ -273,3 +289,10 @@
 (defprim tagged-list? (lst tag)
          (and (not (null? lst))
               (eq? (fst lst) tag)))
+
+(defprim gensym ()
+         (~>> (__symbol-table-index)
+              fixnum->string
+              (string-append "g")
+              string->symbol))
+
