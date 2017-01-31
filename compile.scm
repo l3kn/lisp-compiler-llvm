@@ -174,10 +174,9 @@
                        (extend-env (let-binding-variable b) var_ new-env)))))
 
 (defn emit-string (var str)
-      (let ((len (string-length str))
-            (tmp (generate-var)))
+      (let ((tmp (generate-var)))
         (emit-call0 tmp "@internal_heap-current-pointer")
-        (emit-string_ str 0 len)
+        (emit-string_ str 0 (string-length str))
         (puts "  call i64 @internal_heap-store-byte(i8 0)")
         (puts "  call void @internal_heap-align-index()")
         (puts (format "  ~A = or i64 ~A, 5" (list var tmp)))))
