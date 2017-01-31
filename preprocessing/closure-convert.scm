@@ -1,25 +1,18 @@
 (defn closure-convert-expr (expr)
       (closure-convert expr))
 
-(def lambdas '())
 (def global-vars '())
-
 (defn global-var-env ()
       (extend-env* global-vars
-                   (map (fn (var) (string-append "@var_" (escape var)))
+                   (map (fn (var) (~>> var escape (string-append "@var_")))
                         global-vars)
                    empty-env))
-
-(defn register-lamdba (name body)
-      (let ((old-lambdas lambdas))
-        (set! lambdas
-          (cons (list name body)
-                old-lambdas))))
-
 (defn register-global-var (name)
-      (let ((old-global-vars global-vars))
-        (set! global-vars
-          (cons name old-global-vars))))
+      (set! global-vars (cons name global-vars)))
+
+(def lambdas '())
+(defn register-lamdba (name body)
+      (set! lambdas (cons (list name body) lambdas)))
 
 (defn closure-convert (expr)
       (cond
@@ -30,20 +23,15 @@
                 (arity (length (fn-params expr)))
                 (free-vars (free expr))
                 (replacements
-                  (map-with-index (fn (v index)
-                                      (cons v
-                                            `(list-ref ,index __env)))
-                                  0
+                  (map-with-index (fn (v index) `(,v list-ref ,index __env))
                                   free-vars)))
-           (let ((new-body
-                   (~>> expr
-                       fn-body
-                       closure-convert
-                       (substitute replacements))))
-             (register-lamdba name
-                              (make-fn (cons '__env (fn-params expr))
-                                       new-body))
-             (list 'make-closure name arity (list->nested-cons_ free-vars)))))
+           (~>> expr
+                fn-body
+                closure-convert
+                (substitute replacements)
+                (make-fn (cons '__env (fn-params expr)))
+                (register-lamdba name))
+           (list 'make-closure name arity (list->nested-cons_ free-vars))))
         ((begin? expr)
          (~>> expr
               begin-expressions
@@ -65,8 +53,8 @@
                 (body (let-body expr))
                 (new-bindings
                   (map (fn (binding)
-                           (list (let-binding-variable binding)
-                                 (closure-convert (let-binding-value binding))))
+                           (~>> binding let-binding-value closure-convert
+                                (list (let-binding-variable binding))))
                        bindings)))
            (make-let new-bindings (closure-convert body))))
         ((list? expr)
@@ -85,20 +73,15 @@
          (let* ((bindings (let-bindings expr))
                 (body (let-body expr))
                 (bound (map let-binding-variable bindings)))
-           (set-union*
-             (cons 
-               (set-subtract (free body) bound)
+           (set-union
+             (set-subtract (free body) bound)
+             (set-union*
                (map (fn (x) (~> x let-binding-value free))
                     bindings)))))
         ((and (symbol? expr) (not (assoc expr (global-var-env))))
          (singleton-set expr))
-        ((tagged-list? expr 'quote)
-         (empty-set))
-        ((list? expr)
-         ; (set-union* (map free expr)))
-         (if (null? expr)
-           (empty-set)
-           (set-union* (map free (rst expr)))))
+        ((quote? expr) (empty-set))
+        ((list? expr) (~>> expr rst (map free) set-union*))
         (else (empty-set))))
 
 (defn substitute (replacements expr)

@@ -1,7 +1,7 @@
 (include "compile.scm")
 
 (defn emit-program (exprs)
-  (let ((preprocessed (map (fn (expr) (~> expr desugar alpha-convert-expr closure-convert)); normalize-term))
+  (let ((preprocessed (map (fn (expr) (~> expr desugar alpha-convert closure-convert)); normalize-term))
                            exprs)))
     (for-each emit-global-var global-vars)
     (for-each (fn (expr)
@@ -16,14 +16,14 @@
 (def infile (fst (command-line-arguments)))
 (emit-program (read-file infile))
 
-; (defn debug (expr)
-;       (puts (~> expr))
-;       (let ((e2 (~> expr desugar)))
-;         (puts e2)
-;         (let ((e3 (~> e2 alpha-convert-expr)))
-;           (puts e3)
-;           (let ((e4 (~> e3 closure-convert)))
-;             (puts e4)))))
+(defn debug (expr)
+      (puts (~> expr))
+      (let ((e2 (~> expr desugar)))
+        (puts e2)
+        (let ((e3 (~> e2 alpha-convert)))
+          (puts e3)
+          (let ((e4 (~> e3 closure-convert)))
+            (puts e4)))))
 
 
 ; (for-each debug 

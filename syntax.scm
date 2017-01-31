@@ -1,3 +1,9 @@
+(defn immediate? (x)
+  (or (fixnum? x) (boolean? x) (char? x) (null? x)))
+(defn atomic? (x)
+  (or (immediate? x) (symbol? x) (string? x))) 
+(defn variable? (expr) (symbol? expr))
+
 (defn def? (expr) (tagged-list? expr 'def))
 (defn def-name (expr) (frst expr))
 (defn def-value (expr) (frrst expr))

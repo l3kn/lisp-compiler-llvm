@@ -1,6 +1,5 @@
-(defn alpha-convert-expr (expr) (alpha-convert expr empty-env))
-
-(defn alpha-convert (expr env)
+(defn alpha-convert (expr) (alpha-convert_ expr empty-env))
+(defn alpha-convert_ (expr env)
   (cond
     ((let? expr)
      (let* ((bindings (let-bindings expr))
@@ -13,13 +12,12 @@
             (new-bindings
               (map (fn (binding)
                      (list (lookup (let-binding-variable binding) new-env)
-                           (alpha-convert (let-binding-value binding) env)))
+                           (alpha-convert_ (let-binding-value binding) env)))
                    bindings))
-            (new-body (alpha-convert body new-env)))
-       (make-let new-bindings
-                 new-body)))
+            (new-body (alpha-convert_ body new-env)))
+       (make-let new-bindings new-body)))
     ((list? expr)
-     (map (fn (expr) (alpha-convert expr env))
+     (map (fn (expr) (alpha-convert_ expr env))
           expr))
     ; If a variable doesn't appear in the env,
     ; just assume it to be a primitive function

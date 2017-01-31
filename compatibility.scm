@@ -76,13 +76,13 @@
 (define fixnum? number?)
 (define puts print)
 
-(defn join (lst sep)
+(defn join (sep lst)
   (cond
     ((null? lst) "")
     ((null? (rst lst)) (any->string (fst lst)))
     (else (string-append
             (string-append (any->string (fst lst)) sep)
-            (join (rst lst) sep)))))
+            (join sep (rst lst))))))
 
 (def any->string ->string)
 (def fixnum->string number->string)

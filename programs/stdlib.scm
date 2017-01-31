@@ -276,13 +276,13 @@
                  (cons (fst a)
                        (append (rst a) b)))))
 
-(defprim join (lst sep)
+(defprim join (sep lst)
          (cond
            ((null? lst) "")
            ((null? (rst lst)) (any->string (fst lst)))
            (else (string-append
                    (string-append (any->string (fst lst)) sep)
-                   (join (rst lst) sep)))))
+                   (join sep (rst lst))))))
 
 (defprim list? (lst)
          (if (pair? lst)

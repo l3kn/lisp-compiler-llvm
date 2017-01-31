@@ -1,22 +1,25 @@
 (def var-counter 0)
 (defn generate-var ()
-  (begin
-    (set! var-counter (add1 var-counter))
-    (string-append "%tmp"
-                   (fixnum->string var-counter))))
+      (set! var-counter (add1 var-counter))
+      (string-append "%tmp"
+                     (fixnum->string var-counter)))
 
 (def label-count 0)
 (defn unique-label (name)
-  (set! label-count (add1 label-count))
-  (format "L~A_~A"(list label-count name)))
+      (set! label-count (add1 label-count))
+      (format "L~A_~A"(list label-count name)))
 
 (defn arg-str (arity)
-  (cond
-    ((eq? arity 0) "")
-    ((eq? arity 1) "i64")
-    (else
-      (string-append "i64, "
-                     (arg-str (sub1 arity))))))
+      (cond
+        ((eq? arity 0) "")
+        ((eq? arity 1) "i64")
+        (else
+          (~>> arity sub1 arg-str (string-append "i64, ")))))
+
+(defn var-str (vars)
+      (~>> vars
+           (map (fn (a) (string-append "i64 " a)))
+           (join ", ")))
 
 (defn escape-char (char) char
       (cond
@@ -30,22 +33,21 @@
         (else (char->string char))))
 
 (defn escape (str)
-  (join
-    (~>> str any->string string->list
-         (map escape-char)
-         (cons "prim_"))
-    ""))
+      (~>> str any->string string->list
+           (map escape-char)
+           (cons "prim_")
+           (join "")))
 
 (defn tagged-list? (expr tag)
-      (and (pair? expr)
-           (eq? (fst expr) tag)))
+      (and (pair? expr) (eq? (fst expr) tag)))
 
-(defn map-with-index (f start lst)
+(defn map-with-index (f lst) (map-with-index_ f 0 lst))
+(defn map-with-index_ (f start lst)
       (if (null? lst)
         lst
         (cons
           (f (fst lst) start)
-          (map-with-index f (add1 start) (rst lst)))))
+          (map-with-index_ f (add1 start) (rst lst)))))
 
 (defn empty-set () '())
 (defn singleton-set (expr) (list expr))

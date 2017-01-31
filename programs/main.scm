@@ -18,3 +18,8 @@
                      (char->string (string-ref str idx)))))))
 
 (print (format "a + b = ~A" (list (fx+ 1 2))))
+
+(begin
+  (puts "foo")
+  (puts "bar")
+  (puts "baz"))
