@@ -16,7 +16,9 @@
 
 ## Special Syntax
 
-* `(pipe var fn1 fn2 fn3)` = `(fn3 (fn2 (fn1 var)))`
+* `~>`
+* `~>>`
+* `cond~>`
 
 ## Preprocessing
 

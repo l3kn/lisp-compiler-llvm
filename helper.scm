@@ -8,7 +8,7 @@
 (def label-count 0)
 (defn unique-label (name)
   (set! label-count (add1 label-count))
-  (string-append* (list "L" (fixnum->string label-count) "_" name)))
+  (format "L~A_~A"(list label-count name)))
 
 (defn arg-str (arity)
   (cond
@@ -30,10 +30,11 @@
         (else (char->string char))))
 
 (defn escape (str)
-  (~>> str any->string string->list
-       (map escape-char)
-       (cons "prim_")
-       string-append*))
+  (join
+    (~>> str any->string string->list
+         (map escape-char)
+         (cons "prim_"))
+    ""))
 
 (defn tagged-list? (expr tag)
       (and (pair? expr)

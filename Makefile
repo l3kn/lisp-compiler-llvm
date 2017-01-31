@@ -1,5 +1,11 @@
 all: generate body
 
+combine-chicken:
+	cat compatibility.scm syntax.scm helper.scm llvm.scm preprocessing/*.scm compile.scm > full.scm
+
+combine:
+	cat syntax.scm helper.scm llvm.scm preprocessing/*.scm compile.scm > full.scm
+
 body: link compile run
 
 stdlib:
@@ -24,4 +30,4 @@ tests:
 	csi -s test/runner.scm
 
 clean:
-	rm body.ll output.ll output.s output
+	rm body.ll output.ll output.s output full.scm

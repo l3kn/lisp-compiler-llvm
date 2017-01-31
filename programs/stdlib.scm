@@ -76,11 +76,6 @@
            (cons (string-ref str idx)
                  (string->list_ str (fxadd1 idx) len))))
 
-(defprim string-append* (lst)
-         (if (null? lst)
-           ""
-           (string-append (fst lst) (string-append* (rst lst)))))
-
 (defprim any->string (val)
          (cond
            ((eq? val #t) "#t")
@@ -97,11 +92,12 @@
            ((symbol? val)
             (symbol->string val))
            ((closure? val)
-            (string-append* (list "<closure/" (fixnum->string (closure-arity val)) ">")))
+            (format "<closure/~A>" (list (closure-arity val))))
            (else "unknown")))
 
 (defprim pair->string (pair)
-         (string-append* (list "(" (any->string (fst pair)) " . " (any->string (rst pair)) ")")))
+         (format "(~A . ~A)" (list (any->string (fst pair))
+                                   (any->string (rst pair)))))
 
 (defprim inspect (val)
          (puts (inspect_ val)))
@@ -109,6 +105,25 @@
          (cond
            ((symbol? val) (string-append "'" (symbol->string val)))
            (else (any->string val))))
+
+(defprim format (str vars) (format_ str vars 0 (string-length str) ""))
+
+; TODO: This will break if there are not enough vars
+(defprim format_ (str vars idx len res)
+         (cond
+           ((eq? idx len) res)
+           ((and (fx<=? idx (fx- len 2))
+                 (eq? (string-ref str idx) #\~)
+                 (eq? (string-ref str (fxadd1 idx)) #\A))
+            (format_ str (rst vars) (fx+ idx 2) len
+                     (string-append
+                       res
+                       (any->string (fst vars)))))
+           (else
+             (format_ str vars (fxadd1 idx) len
+                      (string-append
+                        res
+                        (char->string (string-ref str idx)))))))
 
 (defprim puts (val)
          (print val)

@@ -49,7 +49,7 @@
             (args-with-vars (map (fn (arg) (cons arg (generate-var))) args))
             (args-string
               (join (map (fn (a) (string-append "i64 " (rst a))) args-with-vars) ", ")))
-       (puts (string-append* (list "define i64 @" (escape name) "(" args-string ") {")))
+       (puts (format "define i64 @~A(~A) {" (list (escape name) args-string)))
        (emit-expr "%res" args-with-vars (defn-body expr))
        (emit-ret "%res")
        (puts "}")))
@@ -64,20 +64,20 @@
          (args-with-vars (map (fn (arg) (cons arg (generate-var))) args))
          (args-string
            (join (map (fn (a) (string-append "i64 " (rst a))) args-with-vars) ", ")))
-    (puts (string-append* (list "define i64 @lambda_" (symbol->string name) "(" args-string ") {")))
+    (puts (format "define i64 @lambda_~A(~A) {" (list name args-string)))
     (emit-expr "%res" (append args-with-vars env) body)
     (emit-ret "%res")
     (puts "}")))
 
 (defn emit-global-var (var)
-  (puts (string-append* (list "@var_" (escape var) " = weak global i64 0"))))
+  (puts (format "@var_~A = weak global i64 0" (list (escape var)))))
 
 (defn emit-expr (var env expr)
   ; (puts "  ;" var " = " expr)
   (cond
     ((immediate? expr) (emit-immediate var expr))
     ((string? expr) (emit-string var expr))
-    ((tagged-list? expr 'quote)
+    ((quote? expr)
      (if (eq? (frst expr) '())
          (emit-immediate var '())
          (emit-symbol var (frst expr))))
@@ -90,7 +90,7 @@
            (name (frst expr))
            (arity (frrst expr))
            (env_ (frrrst expr)))
-       (puts (string-append* (list "  " tmp1 " = ptrtoint i64 (" (arg-str (add1 arity)) ")* @lambda_" (symbol->string name) " to i64")))
+       (puts (format "  ~A = ptrtoint i64 (~A)* @lambda_~A to i64" (list tmp1 (arg-str (add1 arity)) name)))
        (emit-expr tmp2 env env_)
        (emit-call3 var "@internal_make-closure" tmp1 (fixnum->string (immediate-rep arity)) tmp2)
        ))
@@ -99,12 +99,6 @@
      (emit-store var (string-append "@var_" (escape (def-name expr)))))
     ; For now, `set!` is just converted to `def` in `closure-convert.scm`,
     ; the only difference is, that `def` adds an element to the list of global vars
-    ; ((tagged-list? expr 'set!)
-    ;  (let ((tmp (generate-var))
-    ;        (name (frst expr))
-    ;        (value (frrst expr)))
-    ;    (emit-expr tmp env value)
-    ;    (emit-store tmp (string-append "@var_" (escape name)))))
     ((list? expr)
      (let* ((name (fst expr))
             (args (rst expr))
@@ -127,11 +121,11 @@
                (emit-variable-ref tmp1 env name)
                (emit-call1 tmp2 "@internal_closure-function" tmp1)
                (emit-call1 tmp4 "@prim_closure-env" tmp1)
-               (puts (string-append* (list "  " tmp3 " = inttoptr i64 " tmp2 " to i64 (" (arg-str (add1 arity)) ")*")))  
+               (puts (format "  ~A = inttoptr i64 ~A to i64 (~A)*" (list tmp3 tmp2 (arg-str (add1 arity)))))
                (if (> (length vars) 0)
-                   (puts (string-append* (list "  " var  " = call i64 " tmp3 "(i64 " tmp4 ", " (join vars ", ") ")")))
-                   (puts (string-append* (list "  " var  " = call i64 " tmp3 "(i64 " tmp4 ")"))))))
-           (puts (string-append* (list "  " var " = call i64 @" (escape name) "(" (join vars ", ") ")" )))))))
+                   (puts (format "  ~A = call i64 ~A(i64 ~A, ~A)" (list var tmp3 tmp4 (join vars ", "))))
+                   (puts (format "  ~A = call i64 ~A(i64 ~A)" (list var tmp3 tmp4))))))
+           (puts (format "  ~A = call i64 @~A(~A)" (list var (escape name) (join vars ", "))))))))
     ((variable? expr) (emit-variable-ref var env expr))
     (else
       (error "Unknown expression: " expr)))
@@ -139,13 +133,11 @@
   ; (puts "  ; end of " var " = " expr))
 
 (defn emit-variable-ref (var env expr)
-  ; (puts ">>> emit-var-ref " expr)
   (let ((res (assoc expr env)))
     (if res
       (if (eq? (string-ref (rst res) 0) #\@)
           (emit-load var (rst res))
           (emit-copy var (rst res)))
-      ; (emit-load var (string-append "@var_" (escape expr))))))
       (error "can't find " expr " in env"))))
 
 (defn emit-symbol (var expr)
@@ -163,9 +155,9 @@
         (res-var1 (generate-var))
         (res-var2 (generate-var)))
     (emit-expr test-var env (if-test expr))
-    (puts (string-append* (list "  " test-res-var " = icmp eq i64 " test-var ", " (fixnum->string (immediate-rep #t)))))
+    (puts (format "  ~A = icmp eq i64 ~A, ~A" (list test-res-var test-var (immediate-rep #t))))
     (emit-alloca res-var)
-    (puts (string-append* (list "  br i1 " test-res-var ", label %" true-label ", label %" false-label)))
+    (puts (format "  br i1 ~A, label %~A, label %~A" (list test-res-var true-label false-label)))
 
     (emit-label true-label)
     (emit-expr res-var1 env (if-consequent expr))
@@ -183,14 +175,13 @@
 (defn emit-begin (var env expr)
   (emit-begin_ var env (begin-expressions expr)))
 (defn emit-begin_ (var env lst)
-  (cond ((null? lst) (error "Empty begin"))
+  (cond ((null? lst) (error "Empty begin" lst))
         ((null? (rst lst)) (emit-expr var env (fst lst)))
         (else
           (emit-expr (generate-var) env (fst lst))
           (emit-begin_ var env (rst lst)))))
 
-(defn emit-let (var env expr)
-  (process-let var expr (let-bindings expr) env))
+(defn emit-let (var env expr) (process-let var expr (let-bindings expr) env))
 (defn process-let (var expr bindings new-env)
   (if (null? bindings)
       (emit-expr var new-env (let-body expr))
@@ -211,17 +202,13 @@
     (emit-string_ str 0 len)
     (puts "  call i64 @internal_heap-store-byte(i8 0)")
     (puts "  call void @internal_heap-align-index()")
-    (puts (string-append* (list "  " var " = or i64 " tmp ", 5")))))
+    (puts (format "  ~A = or i64 ~A, 5" (list var tmp)))))
 
 (defn emit-string_ (str idx len)
   ; TODO: Rewrite this once one-armed ifs are supported
   (if (< idx len)
       (begin
-        (puts (string-append* (list "  call i64 @internal_heap-store-byte(i8 "
-                                     (~>> idx
-                                          (string-ref str)
-                                          char->fixnum
-                                          fixnum->string)
-                                     ")")))
+        (puts (format "  call i64 @internal_heap-store-byte(i8 ~A)"
+                      (list (~>> idx (string-ref str) char->fixnum fixnum->string))))
         (emit-string_ str (add1 idx) len))
       'ok))
