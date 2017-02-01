@@ -81,6 +81,7 @@
         ((and (symbol? expr) (not (assoc expr (global-var-env))))
          (singleton-set expr))
         ((quote? expr) (empty-set))
+        ((null? expr) (empty-set))
         ((list? expr) (~>> expr rst (map free) set-union*))
         (else (empty-set))))
 
