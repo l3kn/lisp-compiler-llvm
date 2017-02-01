@@ -1,6 +1,7 @@
 declare i8* @calloc(i32, i32)
 declare void @free(i8*)
 declare i8 @putchar(i8)
+declare i8 @getchar()
 declare void @llvm.memcpy.p0i8.p0i8.i64(i8*, i8*, i64, i32, i1)
 
 @heap_base = global i8* zeroinitializer, align 8
@@ -37,8 +38,24 @@ define i64 @prim_putchar(i64 %a) {
   %raw_res = call i8 @putchar(i8 %char)
   %res = zext i8 %raw_res to i64  
   %res2 = shl i64 %res, 3
+  %res3 = xor i64 %res2, 2
 
-  ret i64 7
+  ret i64 %res2
+}
+
+define i64 @prim_getchar() {
+  %raw_res = call i8 @getchar()
+  %pos = icmp sge i8 %raw_res, 0
+
+  br i1 %pos, label %is_pos, label %is_neg
+  is_pos:
+    %res = zext i8 %raw_res to i64
+    %res2 = shl i64 %res, 3
+    %res3 = xor i64 %res2, 2
+    ret i64 %res3
+  is_neg:
+    ; Return null (EOF)
+    ret i64 7
 }
 
 ; Internal helper functions for working w/ the symbol table
