@@ -67,6 +67,25 @@
            ((fx<? fx 0) (string-append "-" (fixnum->string_ (fx- 0 fx))))
            (else (fixnum->string_ fx))))
 
+(defprim string->fixnum (str)
+         (let ((digit (string-ref str 0)))
+           (cond
+             ((eq? digit #\0) 0)
+             ((eq? digit #\-)
+              (fxneg (string->fixnum_ str 1 (string-length str) 0)))
+             (else (string->fixnum_ str 0 (string-length str) 0)))))
+
+(defprim string->fixnum_ (str idx len acc)
+         (if (eq? idx len)
+             acc
+             (let ((digit
+                     (~> (string-ref str idx)
+                         char->fixnum
+                         (fx- 48))))
+               (string->fixnum_ str (fxadd1 idx) len
+                                (fx+ (fx* 10 acc)
+                                     digit)))))
+
 (defprim string->list (str)
          (string->list_ str 0 (string-length str)))
 
@@ -86,7 +105,11 @@
            ((pair? val)
             (pair->string val))
            ((char? val)
-            (string-append "#\\" (char->string val)))
+            (cond
+              ((eq? val #\newline) "#\\newline")
+              ((eq? val #\space) "#\\space")
+              ((eq? val #\tab) "#\\tab")
+              (else (string-append "#\\" (char->string val)))))
            ((string? val)
             val)
            ((symbol? val)
@@ -94,6 +117,13 @@
            ((closure? val)
             (format "<closure/~A>" (list (closure-arity val))))
            (else "unknown")))
+
+(defprim list->string (lst)
+         (if (null? lst)
+             ""
+             (string-append
+               (~> lst fst char->string)
+               (list->string (rst lst)))))
 
 (defprim pair->string (pair)
          (format "(~A . ~A)" (list (any->string (fst pair))
@@ -132,6 +162,19 @@
 (defprim read (str)
          (rst (read_ str 0 (string-length str))))
 
+(defprim char-numeric? (char)
+         (let ((ord (char->fixnum char)))
+           (and (fx<=? 48 ord) (fx>=? 57 ord))))
+
+(defprim char-whitespace? (char)
+         (or (eq? char #\space)
+             (eq? char #\newline)))
+
+(defprim char-alphabetic? (char)
+         (let ((ord (char->fixnum char)))
+           (or (and (fx<=? 65 ord) (fx>=? 90 ord))
+               (and (fx<=? 97 ord) (fx>=? 122 ord)))))
+
 (defprim char-is-digit? (char)
          (let ((ord (char->fixnum char)))
            (and (fx<=? 48 ord) (fx>=? 57 ord))))
@@ -141,19 +184,20 @@
            (or (and (fx<=? 65 ord) (fx>=? 90 ord))
                (and (fx<=? 97 ord) (fx>=? 122 ord)))))
 
-(defprim char-is-special? (char)
+(defprim char-special? (char)
          (or (eq? char #\<)
              (eq? char #\>)
              (eq? char #\=)
              (eq? char #\-)
              (eq? char #\+)
              (eq? char #\*)
+             (eq? char #\?)
              (eq? char #\\)
              (eq? char #\_)))
 
 (defprim char-is-valid-symbol? (char)
          (or (char-is-letter? char)
-             (char-is-special? char)
+             (char-special? char)
              (char-is-digit? char)))
 
 (defprim read_ (str idx len)
@@ -283,6 +327,15 @@
            (else (string-append
                    (string-append (any->string (fst lst)) sep)
                    (join sep (rst lst))))))
+
+(defprim reverse (lst)
+         (reverse_ lst '()))
+
+(defprim reverse_ (lst res)
+         (if (null? lst)
+             res
+             (reverse_ (rst lst)
+                       (cons (fst lst) res))))
 
 (defprim list? (lst)
          (if (pair? lst)
