@@ -1,8 +1,8 @@
-# Self-Hosting LISP to LLVM-IR compiler
+# LISP Compiler
 
 ## Example Code
 
-```
+``` scheme
 (defn range (from to)
       (if (eq? from to)
           (list from)
