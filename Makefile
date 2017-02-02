@@ -1,33 +1,23 @@
-all: generate body
-
 combine-chicken:
-	cat compatibility.scm syntax.scm helper.scm llvm.scm preprocessing/*.scm compile.scm > full.scm
+	cat compatibility.scm syntax.scm helper.scm llvm.scm preprocessing/*.scm reader.scm compile.scm > full-chicken.scm
 
 combine:
-	cat syntax.scm helper.scm llvm.scm preprocessing/*.scm compile.scm > full.scm
+	cat syntax.scm helper.scm llvm.scm preprocessing/*.scm reader.scm compile.scm > full.scm
 
-body: link compile run
+bootstrap:
+	make combine-chicken
+	make combine
+	make build-chicken infile=full.scm name=compiler-body
+	make build-chicken infile=programs/stdlib.scm name=stdlib
+	make compile name=compiler
 
-stdlib:
-	csi -s compile-lib.scm programs/stdlib.scm > stdlib.ll
+build-chicken:
+	csi -s full-chicken.scm < $(infile) > $(name).ll
 
-generate:
-	csi -s compile-program.scm programs/main.scm > body.ll
-
-link:
-	cat stdlib-ll/*.ll stdlib.ll body.ll > output.ll
+build:
+	./compiler < $(infile) > $(name).ll
 
 compile:
-	llc output.ll -o output.s -O1
-	# -x86-asm-syntax=intel
-	gcc -m64 -o output output.s
-	# -masm=intel 
-
-run:
-	./output
-
-tests:
-	csi -s test/runner.scm
-
-clean:
-	rm body.ll output.ll output.s output full.scm
+	cat stdlib-ll/*.ll stdlib.ll $(name)-body.ll > $(name).ll
+	llc $(name).ll -o $(name).s -O3
+	gcc -m64 -o $(name) $(name).s

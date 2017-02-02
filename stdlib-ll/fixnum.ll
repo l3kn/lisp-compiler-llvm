@@ -9,8 +9,9 @@ define i64 @prim_fx-(i64 %a, i64 %b) {
 }
 
 define i64 @prim_fxshl(i64 %n, i64 %sh) {
-  %tmp = shl i64 %n, %sh
-  ret i64 %tmp
+  %tmp = lshr i64 %sh, 3
+  %tmp2 = shl i64 %n, %tmp
+  ret i64 %tmp2
 }
 
 define i64 @prim_fxneg(i64 %a) {

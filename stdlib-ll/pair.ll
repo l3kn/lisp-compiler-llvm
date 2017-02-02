@@ -36,8 +36,7 @@ define i64 @prim_list-ref(i64 %idx, i64 %lst) {
     ret i64 %tmp2
   next:
     %tmp3 = call i64 @prim_rst(i64 %lst)
-    ; -8 because of the 3 tag bits
     %tmp4 = call i64 @prim_fxsub1(i64 %idx)
-    %tmp5 = call i64 @prim_list-ref(i64 %tmp4, i64 %lst)
+    %tmp5 = call i64 @prim_list-ref(i64 %tmp4, i64 %tmp3)
     ret i64 %tmp5
 }

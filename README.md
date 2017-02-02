@@ -1,4 +1,18 @@
-# LISP to LLVM-IR compiler
+# Self-Hosting LISP to LLVM-IR compiler
+
+## Getting Started
+
+1. Use chicken-scheme to build the compiler & the stdlib
+2. Compile some program to LLVM-IR
+3. Combine it w/ the stdlib files
+4. Run it
+
+``` bash
+make bootstrap
+./compiler < programs/fizzbuzz.csm > fizzbuzz-body.ll 
+cat stdlib-ll/*.ll stdlib.ll fizzbuzz-body.ll > fizzbuzz.ll
+lli fizzbuzz.ll
+```
 
 ## Design Decisions
 
@@ -11,119 +25,41 @@
   * 101: String
   * 110: Pair
   * 111: Hardcoded primitives, #t, #f, '() 
-* Symbols limited to 31 chars,
-  max. 10k symbols per program
+* Symbols are limited to 31 chars
+
+## Limitations
+
+* Not compliant to any standart
+* No GC => compiling itself uses ~1GB of RAM
+
+## Project Structure
+
+* `compiler.scm`
+  Main compiler logic
+* `helper.scm`
+  Helper functions that are not part of the stdlib
+* `llvm.scm`
+  Helper functions for outputting LLVM-IR code
+* `reader.scm`
+  Recursive descent parser for the input language
+* `syntax.scm`
+  Defines the syntax of the input language
+* `preprocessing/
+  * `desugar.scm`
+    Convert `cond` to `if` etc.
+  * `alpha-convert.scm`
+    Rename variables to prevent naming collisions
+  * `closure-convert.scm`
+    Convert `fn`s to closures & lambdas w/o free variables
+* `compatibility.scm`
+  Some macros & functions to make chicken scheme understand the compiler source code
+* `stdlib-ll/`
+  Collection of low-level stdlib functions written directly in LLVM-IR
 
 ## Special Syntax
 
-* `~>`
-* `~>>`
-* `cond~>`
-
-## Preprocessing
-
-### Syntax Desugaring
-
-#### Input
-
-* `let*` to nested `let`s
-* `and` to nested `if`s
-* `or` to nested `if`s
-* `cond` to nested `if`s
-* `defn` to `def` + `lambda`
-
-### Alpha-Conversion
-
-Rename variables to unique symbols
-
-In:
-
-``` lisp
-(let ((x 1)
-      (y 2))
- (let ((x (+ x x)))
-  (* x y)))))
-```
-
-Out:
-
-``` lisp
-(let ((g246 1)
-      (g247 2))
-  (let ((g248 (+ g246 g246)))
-    (* g248 g247)))
-```
-
-### A-Normalization 
-
-Convert functions applications to use vars only.
-
-### Full example
-
-In:
-
-``` lisp
-(defn fib (n)
-      (if (fx<=? n 1)
-          n
-          (fx+ (fib (fx- n 1))
-               (fib (fx- n 2)))))))
-```
-
-Out:
-
-``` lisp
-(defn fib (n)
-      (let ((test (fx<=? n 1)))
-        (if test
-            n
-            (let ((a (fx- n 1)))
-              (let ((fib_a (fib a)))
-                (let ((b (fx- n 2)))
-                  (let ((fib_b (fib b)))
-                    (fx+ fib_a fib_b))))))))
-```
-
-## Code sample
-
-``` lisp
-  (defn fib (n)
-        (if (fx<=? n 1)
-            n
-            (fx+ (fib (fx- n 1))
-                 (fib (fx- n 2)))))
-  (defn main ()
-    (fib 40))
-```
-
-## Functions
-
-* `(string-length str)`
-* `(string-append str1, str2)`
-* `(digit->string fx)` (`0` -> `"0", ..., `9` -> `"9"`)
-* `(fixnum->string fx)`
-
-* `(fx+ fx1, fx2)`
-* `(fx- fx1, fx2)`
-* `(fxadd1 fx)`
-* `(fxsub1 fx)`
-* `(fxzero? fx)`
-
-* `(print str)`
-* `(inspect value)`
-* `(newline)`
-
-* `(eq? v1 v2)` (test equivalence of immediate values (`#t`, `#f`, `()`, fixnums) and pointers)
-
-### Low-Level
-
-* `(__heap-index)`
-* `(__tag val)`
-* `(__value val)`
-
-## TODO
-
-- [ ] Add `align`s in the `.ll` source code
+* `~>` Thread-first macro like in clojure
+* `~>>` Thread-last macro like in clojure
 
 ## Links
 

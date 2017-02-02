@@ -3,7 +3,6 @@
           (list from)
           (cons from
                 (range (fxadd1 from) to))))
-
 (defn fizzbuzz (n)
       (cond
         ((eq? (fxrem n 15) 0) (puts "FizzBuzz"))

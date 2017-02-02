@@ -11,10 +11,10 @@ declare void @llvm.memcpy.p0i8.p0i8.i64(i8*, i8*, i64, i32, i1)
 @symbol_table_index = global i64 0, align 8
 
 define void @main() {
-  %cells = call i8* @calloc(i32 200000, i32 8)
+  %cells = call i8* @calloc(i32 200000000, i32 8)
   store i8* %cells, i8** @heap_base, align 8
 
-  %symbols = call i8* @calloc(i32 200000, i32 256)
+  %symbols = call i8* @calloc(i32 1000000, i32 256)
   store i8* %symbols, i8** @symbol_table_base, align 8
 
   call i64 @prim_main()

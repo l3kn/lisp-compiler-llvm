@@ -1,37 +1,16 @@
-(include "compatibility.scm")
-(include "syntax.scm")
-(include "helper.scm")
-(include "llvm.scm")
-(include "preprocessing/desugar.scm")
-(include "preprocessing/alpha-convert.scm")
-(include "preprocessing/closure-convert.scm")
-
-(def tag_mask #b111)
-(def fixnum_tag #b000)
-
-(def char_tag #b010)
-(def constant_tag #b111)
-(def true  #b111111)
-(def false #b011111)
-(def null  #b000111)
-
 (defn immediate-rep (x)
       (cond
         ((fixnum? x) 
-         (fxshl x 3))
+         (+ (fxshl x 3) 0))
         ((char? x)
-         (+ (fxshl (char->fixnum x) 3)
-            char_tag))
+         (+ (fxshl (char->fixnum x) 3) 2))
         ((boolean? x)
-         (if x true false))
-        ((null? x) null)
+         (if x 63 31))
+        ((null? x) 7)
         (else (error "Invalid expression: " x))))
 
 (defn emit-immediate (var expr)
-      (~>> expr
-           immediate-rep
-           fixnum->string
-           (emit-copy var)))
+      (~>> expr immediate-rep fixnum->string (emit-copy var)))
 
 (defn emit-toplevel-expr (expr)
       (cond
@@ -118,7 +97,7 @@
           (if (eq? (string-ref (rst res) 0) #\@)
             (emit-load var (rst res))
             (emit-copy var (rst res)))
-          (error "can't find " expr " in env"))))
+          (error "can't find in env: " expr))))
 
 (defn emit-symbol (var expr)
       (let ((tmp (generate-var)))
@@ -133,9 +112,10 @@
             (res-var (generate-var))
             (res-var1 (generate-var)) (res-var2 (generate-var)))
         (emit-expr test-var env (if-test expr))
-        (puts (format "  ~A = icmp eq i64 ~A, ~A" (list test-res-var test-var (immediate-rep #t))))
+        ; TODO: Right now all values but #f are treated as true
+        (puts (format "  ~A = icmp eq i64 ~A, ~A" (list test-res-var test-var (immediate-rep #f))))
         (emit-alloca res-var)
-        (puts (format "  br i1 ~A, label %~A, label %~A" (list test-res-var true-label false-label)))
+        (puts (format "  br i1 ~A, label %~A, label %~A" (list test-res-var false-label true-label)))
 
         (emit-label true-label)
         (emit-expr res-var1 env (if-consequent expr))
@@ -189,3 +169,26 @@
                         (list (~>> idx (string-ref str) char->fixnum fixnum->string))))
           (emit-string_ str (add1 idx) len))
         'ok))
+
+(defn emit-main (exprs)
+  (for-each emit-global-var global-vars)
+  (for-each (fn (expr)
+                (emit-lambda (global-var-env) expr))
+            lambdas)
+  (puts "define i64 @prim_main() {")
+  (for-each (fn (expr) (emit-expr (generate-var) (global-var-env) expr))
+            exprs)
+  (emit-ret (fixnum->string 0))
+  (puts "}"))
+
+(defn emit-lib (exprs)
+      ; Variables & lambdas are not allowed in libs
+      (for-each emit-toplevel-expr exprs))
+
+(defn preprocess (expr) (~> expr desugar alpha-convert closure-convert))
+
+; lib files start w/ a single symbol "lib"
+(let ((exprs (read-all)))
+  (if (eq? (fst exprs) 'lib)
+      (~>> exprs rst (map preprocess) emit-lib)
+      (~>> exprs (map preprocess) emit-main)))
